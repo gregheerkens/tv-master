@@ -58,6 +58,8 @@ def import_records(db, document):
                  original,item.get('date_evidence'),
                  json.dumps(item['episode_metadata']) if item.get('episode_metadata') is not None else None,
                  item.get('description'),strings(item.get('tags',[]))))
+        for item in document.get('content_aliases',[]):
+            db.execute('INSERT OR IGNORE INTO content_alias VALUES (?,?,?)',(item['content_id'],item['title'],item.get('episode_title','')))
         for key,table,identifier in [('asset_links','asset_content','asset_id'),
                                       ('program_links','program_content','program_id')]:
             for item in document.get(key,[]):
@@ -156,6 +158,9 @@ def channel_lookup(db, market_id, provider_id, day):
 class Policy:
     """One catalog snapshot per composed block; published blocks never re-evaluate it."""
     def __init__(self,db):
+        from .broadcasts import active
+        layout=active(db)
+        self.active_market=db.execute('SELECT market_id FROM provider WHERE id=?',(layout['provider_id'],)).fetchone()[0] if layout else None
         self.asset_ids=dict(db.execute('SELECT asset_id,content_id FROM asset_content'))
         self.program_ids=dict(db.execute('SELECT program_id,content_id FROM program_content'))
         self.blocked={r[0] for r in db.execute('SELECT content_id FROM content_preference WHERE never_schedule=1')}
@@ -211,7 +216,7 @@ class Policy:
         return (w['valid_from']<=day<w['valid_until']
                 and (not months or int(day[5:7]) in months)
                 and (w['service_id'] is None or w['service_id']==service)
-                and (w['market_id'] is None or any(m['service_id']==service and m['market_id']==w['market_id'] and m['valid_from']<=day<m['valid_until'] for m in self.markets))
+                and (w['market_id'] is None or (w['market_id']==self.active_market if self.active_market else any(m['service_id']==service and m['market_id']==w['market_id'] and m['valid_from']<=day<m['valid_until'] for m in self.markets)))
                 and (w['network_id'] is None or any(a['service_id']==service and a['network_id']==w['network_id'] and a['valid_from']<=day<a['valid_until'] for a in self.affiliations)))
 
 

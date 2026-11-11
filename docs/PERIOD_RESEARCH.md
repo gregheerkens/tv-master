@@ -1,6 +1,6 @@
 # Research a period before measuring its gaps
 
-Open `/research` from the manager. No API key or AI provider is needed.
+Open `/research` on an explicit loopback `serve --admin` console; research is server-only. No API key or AI provider is needed.
 The database keeps collected source pages separate from accepted historical airings.
 An HTTP success, a search result or a saved page alone never establishes coverage.
 
@@ -43,16 +43,19 @@ errors, not guessed programming. There is no universal OCR/PDF or arbitrary-site
 scraper, full-site crawl, search-engine discovery or historical station lookup yet.
 
 The parser uses the next explicit listing start as a slot's end. Blank listings
-stay blank. Bad clocks break continuity; a final listing with no end boundary is
-omitted. It does not assume every show lasts 30 minutes or fill the end of the day.
+stay blank. Bad clocks break continuity. Late-night final slots poll the next day:
+a matching midnight continuation uses its next boundary; a different named program
+implies 23:59 inclusive (exclusive midnight in storage). Unavailable or blank first
+slots stay pending. Supply `next_html`/`next_day_url` or `retry_boundary` to resume a
+cached pending lookup. Other unbounded final slots are omitted rather than guessed.
 Evening-to-midnight rollovers are handled. Ambiguous/nonexistent DST times require
 sideloaded timestamps with explicit offsets. Durations longer than four hours
 require a separately reviewed listing import rather than automatic inference.
 
 ## Evidence and matching
 
-All scraped rows start at `schedule_exact` (program-slot evidence), regardless of
-whether the source supplies episode annotations. This is a claim attributed to
+Scraped slots retain `schedule_exact` as their source-confidence state. Named
+episodes now become usable catalog identities, even without season numbers. This is a claim attributed to
 that source, not a verified as-aired log. Human review is required before acceptance.
 The UI suggests a catalog identity only for an unambiguous matching title, with
 matching episode text when present; it never uses fuzzy matching to claim an episode.
@@ -69,14 +72,14 @@ ownership and never changes published guide rows while researching or accepting.
 
 ## Real sideload example
 
-`examples/research/nickelodeon-1995-07-04.json` contains **43 bounded program slots**
+`examples/research/nickelodeon-1995-07-04.json` contains **44 bounded program slots**
 from [The Kids Block Blog+ daily listing](https://kidsblockblog.wordpress.com/2021/01/16/nickelodeon-schedule-for-tuesday-july-4-1995/),
 retrieved through web browsing on November 11, 2026 and manually normalized to JSON.
 This is real secondary-source listing data, separate from synthetic test fixtures.
 It establishes no Rochester station/cable position, commercials or bumpers.
 
-The source leaves 05:30–07:00 blank. Its 23:30 entry has no following end boundary
-and is omitted. Thus the bundle provides **22 hours / 91.7%** program-slot coverage
+The source leaves 05:30–07:00 blank. Its 23:30 entry is now resolved against the July 5 listing: a different midnight
+program implies 23:59 inclusive. Thus the bundle provides **22.5 hours / 93.8%** program-slot coverage
 for that day, with **0% automatically established exact-episode coverage**. These
 are completeness measures of accepted source claims, not independent verification.
 
@@ -113,7 +116,16 @@ identities/listings forward without resetting any published viewing timeline.
 `node scripts/capture-runtime.cjs` captures actual app screens against a prepared
 synthetic demo, without resetting its database. Set `RETRO_TV_URL` and optionally
 `TV_MASTER_SCREENSHOTS` (default `data/runtime-screenshots`, ignored by Git).
-It creates numbered PNGs, an HTML gallery and a JSON manifest. The research review
-captures appear when a Nickelodeon batch has been sideloaded. No images are uploaded.
+It creates numbered PNGs, an HTML gallery and a JSON manifest. Set
+`TV_MASTER_ADMIN_URL` to capture the separate server block editor, and
+`TV_MASTER_CAPTURE_TUNE=1` to tune the prepared demo block. No images are uploaded.
 Generated demo media makes playback verifiable without pretending TV footage is
 included in the application.
+
+Episode titles are matched with punctuation/segment/number normalization and
+optional `content_aliases` in catalog records. `research enrich REQUEST.json` merges
+supplemental episode references by timestamp, or a premiere date when exactly one
+slot matches the show that day. Ambiguous repeated slots stay unresolved. The
+included episode supplement cites Nickstory’s Alvin and Richard Scarry episode
+indexes; those two titles are also present in the updated main sideload bundle.
+Source details remain hover/focus notes in viewer screens. See ADR 0007.

@@ -10,6 +10,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .catalog import connect
+from . import broadcasts
 from .records import utc_now
 from .scheduler import extend, tune, wall_ms
 from .health import timeline_health
@@ -82,17 +83,18 @@ def normalize_request(db,value):
         service=recipe['service_id'];rules=json.loads(recipe['rules'])
     if not db.execute('SELECT 1 FROM service WHERE id=?',(service,)).fetchone():raise ValueError('choose a known channel')
     result={'mode':mode,'service_id':service,'rules':normalize_rules(rules,db)}
+    layout=broadcasts.active(db)
+    if layout:result['layout_id']=layout['id']
+    if service not in broadcasts.service_ids(db):raise ValueError('That channel is outside your broadcast setup')
     state=db.execute('SELECT * FROM state WHERE id=1').fetchone()
     if not state:raise ValueError('initialize the station first')
     if mode=='surfing':
         if any(k in value for k in ('destination','template','year','month')):raise ValueError('Channel Surfing uses the station clock; its time cannot be chosen')
     else:
         if mode=='historical' and value.get('template'):raise ValueError('historical lookup requires a specific destination')
-        stamp=destination(value,ZoneInfo(state['timezone']))
-        if mode=='historical' and not db.execute('''SELECT 1 FROM lineup_entry e JOIN lineup l ON l.id=e.lineup_id
-             WHERE e.service_id=? AND l.valid_from<=? AND l.valid_until>?''',
-             (service,str(stamp.date()),str(stamp.date()))).fetchone():
-            raise ValueError('No dated lineup maps this channel at that destination; import the historical lineup or choose a representative block')
+        stamp=destination(value,ZoneInfo(broadcasts.timezone(db)))
+        if mode=='historical' and service not in {c['id'] for c in broadcasts.channels(db,str(stamp.date()))}:
+            raise ValueError('No dated lineup maps this channel at that destination; configure your broadcast setup')
         result['destination']=stamp.isoformat()
         result['template']=value.get('template')
     return result
@@ -119,8 +121,8 @@ def options(db):
     if not state:raise ValueError('initialize the station first')
     tags=set()
     for row in db.execute('SELECT tags FROM content'):tags.update(t.casefold() for t in json.loads(row[0]))
-    return {'timezone':state['timezone'],'default_destination':datetime.fromtimestamp(state['historical_anchor_ms']/1000,ZoneInfo(state['timezone'])).isoformat(),
-        'channels':[dict(r) for r in db.execute('SELECT id,name FROM service ORDER BY name')],
+    return {'timezone':broadcasts.timezone(db),'default_destination':datetime.fromtimestamp(state['historical_anchor_ms']/1000,ZoneInfo(broadcasts.timezone(db))).isoformat(),
+        'channels':[dict(r) for r in db.execute('SELECT id,name FROM service ORDER BY name') if r['id'] in broadcasts.service_ids(db)],
         'tags':sorted(tags),'collections':[dict(r) for r in db.execute("""SELECT DISTINCT c.id,c.title,c.kind FROM content c
             LEFT JOIN program_content p ON p.content_id=c.id WHERE c.kind='series' OR
             (p.program_id IS NOT NULL AND c.parent_id IS NULL) ORDER BY c.title""")],
@@ -149,7 +151,7 @@ def build(db,request,real_now):
                 scratch.execute(f'DELETE FROM {table}')
         state=scratch.execute('SELECT * FROM state').fetchone()
         if request['mode']!='surfing':
-            zone=ZoneInfo(state['timezone']);stamp=datetime.fromisoformat(request['destination'])
+            zone=ZoneInfo(broadcasts.timezone(db));stamp=datetime.fromisoformat(request['destination'])
             midnight=stamp.replace(hour=0,minute=0,second=0,microsecond=0)
             origin=int(midnight.timestamp()*1000);selected=int(stamp.timestamp()*1000)
             # Compose from midnight, but join at the requested instant inside that timeline.
@@ -161,9 +163,17 @@ def build(db,request,real_now):
             scratch.execute("UPDATE channel_profile SET mode='custom' WHERE mode='historical'")
             base=scratch.execute('''SELECT l.* FROM lineup l JOIN lineup_entry e ON e.lineup_id=l.id
                 WHERE e.service_id=? ORDER BY l.valid_from DESC LIMIT 1''',(request['service_id'],)).fetchone()
-            if not base:raise ValueError('selected channel has no configured lineup')
-            entries=scratch.execute('SELECT channel,service_id FROM lineup_entry WHERE lineup_id=?',(base['id'],)).fetchall()
-            market=scratch.execute('SELECT market_id FROM provider WHERE id=?',(base['provider_id'],)).fetchone()[0]
+            layout=broadcasts.active(db)
+            if layout:
+                entries=[];seen_services=set();seen_channels=set()
+                for row in scratch.execute('SELECT channel,service_id FROM broadcast_layout_entry WHERE layout_id=? ORDER BY valid_from DESC',(layout['id'],)):
+                    if row['service_id'] in seen_services or row['channel'] in seen_channels:continue
+                    entries.append(row);seen_services.add(row['service_id']);seen_channels.add(row['channel'])
+                provider=layout['provider_id']
+            else:
+                if not base:raise ValueError('selected channel has no configured lineup')
+                entries=scratch.execute('SELECT channel,service_id FROM lineup_entry WHERE lineup_id=?',(base['id'],)).fetchall();provider=base['provider_id']
+            market=scratch.execute('SELECT market_id FROM provider WHERE id=?',(provider,)).fetchone()[0]
             scratch.execute('DELETE FROM lineup_entry');scratch.execute('DELETE FROM lineup')
             scratch.execute("INSERT OR REPLACE INTO provider VALUES ('context-personal',?,'Personal representative lineup')",(market,))
             scratch.execute("INSERT INTO lineup VALUES ('context-personal','context-personal','0001-01-01','9999-12-31')")
@@ -187,7 +197,10 @@ def summary(db,request,now):
     slots=db.execute('SELECT * FROM broadcast WHERE service_id=? AND start_ms<=? AND end_ms>?',(service,now,now)).fetchone()
     health=timeline_health(db,service,now,now+72*3600000)
     playable=sum(h['playable_ms'] for h in health.values())
-    return {'mode':request['mode'],'service_id':service,'timezone':state['timezone'],'now_ms':now,
+    listed=db.execute('SELECT c.episode_title FROM content c JOIN historical_airing a ON a.content_id=c.id WHERE a.service_id=? AND a.start_ms<=? AND a.end_ms>?',(service,now,now)).fetchone()
+    block=db.execute('SELECT known_points FROM complete_block WHERE service_id=? AND start_ms<=? AND end_ms>?',(service,now,now)).fetchone()
+    points=json.loads(block[0]) if block else []
+    return {'mode':request['mode'],'service_id':service,'timezone':broadcasts.timezone(db),'now_ms':now,'episode_title':listed[0] if listed else None,'block_anchor_title':points[0].get('title') if points else None,
         'destination':request.get('destination'),'current_title':slots['title'],
         'current_segment':playing['title'],'current_kind':playing['kind'],'current_offset_ms':playing['offset_ms'],
         'current_status':health[slots['id']]['status'],'playable_percent':round(playable/(72*3600000)*100,1),
@@ -284,8 +297,8 @@ def sync_catalog(main_db_path,ident):
         # before adopting new material. A return visit cannot rewrite the past.
         extend(target)
         tables=['market','provider','service','source','source_ingest','content','asset','program',
-                'asset_content','program_content','network','station_history','affiliation_history',
-                'eligibility_window','channel_profile','historical_airing','airing_requirement','airing_override']
+                'asset_content','program_content','content_alias','network','station_history','affiliation_history',
+                'eligibility_window','channel_profile','complete_block','historical_airing','airing_requirement','airing_override']
         if info['mode']!='representative':tables+=['lineup','lineup_entry']
         with target:
             for table in tables:
@@ -301,7 +314,7 @@ def sync_catalog(main_db_path,ident):
                     elif table=='channel_profile' and info['mode']=='representative' and row['mode']=='historical':
                         target.execute("UPDATE channel_profile SET mode='custom' WHERE service_id=?",(row['service_id'],))
             # These are user corrections/preferences, not broadcast-order inputs already published.
-            for table in ('source_location','recording_quality','quality_alert','content_preference','recording_preference','health_standard'):
+            for table in ('stream_source','block_presentation','source_location','recording_quality','quality_alert','content_preference','recording_preference','health_standard'):
                 columns=origin.execute(f'PRAGMA table_info({table})').fetchall()
                 names=[r['name'] for r in columns];mutable=[r['name'] for r in columns if not r['pk']]
                 updates=','.join(f'{c}=excluded.{c}' for c in mutable)

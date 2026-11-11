@@ -559,3 +559,8 @@ dialog button:focus {
 }
 
 .time-machine-link { position:absolute; right:0; top:17px; font-size:10px; color:#aaaadd; text-decoration:underline; }
+
+.source-flag{position:absolute;top:2px;right:3px;font-size:8px;line-height:10px;color:#ffff99;border:1px dotted currentColor;padding:0 2px}.program-cell.focused .source-flag{color:#000066}
+.manager-link{font-weight:bold;font-size:9px;border:1px solid #9999bb;padding:3px 4px;text-decoration:none}
+
+#clock{margin-right:116px;font-size:10px}.time-machine-link{top:20px;font-size:9px}

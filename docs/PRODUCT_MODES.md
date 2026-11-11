@@ -123,3 +123,8 @@ accept reviewed evidence and support externally collected JSON. See
 `PERIOD_RESEARCH.md` for the real sideload example and parser limits. Next: broader
 source validation and physical-TV key testing. Missing-episode claims remain gated
 by accepted researched airings.
+
+The November 11 viewer revision adds a four-mode manager, active reception setups,
+server-only content tooling and explicit Test UI (ADR 0007). Intact local/remote
+recordings are pinned to original broadcast/source brackets (ADR 0008), with
+optional approved local presentations and no mandatory segmentation.

@@ -27,8 +27,12 @@ def main():
     plan=sub.add_parser('import-plan',help='Import sourced historical airings and known continuity requirements')
     plan.add_argument('manifest',type=Path)
     research=sub.add_parser('research',help='Stage daily historical listings; review before accepting')
-    research.add_argument('action',choices=['create','fetch','sideload','accept','list','export'])
+    research.add_argument('action',choices=['create','fetch','sideload','accept','enrich','list','export'])
     research.add_argument('input',nargs='?',help='JSON request file, or batch ID for export')
+    block=sub.add_parser('import-block',help='Anchor a complete local or explicitly enabled remote recording')
+    block.add_argument('manifest',type=Path)
+    presentation=sub.add_parser('attach-block-presentation',help='Approve a downloaded/restored local copy with the same timeline')
+    presentation.add_argument('manifest',type=Path)
     assessment=sub.add_parser('assess',help='Analyze a separate scratch plan without changing live TV')
     assessment.add_argument('--service',required=True);assessment.add_argument('--date',required=True)
     assessment.add_argument('--days',type=int,choices=[1,2,3],default=1)
@@ -59,6 +63,7 @@ def main():
     demo.add_argument('--directory', type=Path, default=Path('data/demo'))
     sub.add_parser('guide', help='Append future blocks and print the current 72-hour guide')
     serve = sub.add_parser('serve')
+    serve.add_argument('--admin',action='store_true',help='Enable loopback-only server research/content console')
     serve.add_argument('--host', default='127.0.0.1')
     serve.add_argument('--port', default=8787, type=int)
     args = parser.parse_args()
@@ -66,7 +71,7 @@ def main():
     try:
         if args.command == 'serve':
             from .server import serve
-            serve(args.db, args.host, args.port)
+            serve(args.db, args.host, args.port,admin=args.admin)
             return
         with connect(args.db) as db:
             if args.command == 'init':
@@ -93,9 +98,15 @@ def main():
                 elif args.action=='export':result=research.export_bundle(db,args.input)
                 else:
                     value=json.loads(Path(args.input).read_text())
-                    action={'create':research.create_batch,'fetch':research.fetch_page,'sideload':research.sideload,'accept':research.accept}[args.action]
+                    action={'create':research.create_batch,'fetch':research.fetch_page,'sideload':research.sideload,'accept':research.accept,'enrich':research.enrich_episodes}[args.action]
                     result=action(db,value)
                 print(json.dumps(result,indent=2))
+            elif args.command == 'import-block':
+                from .blocks import register
+                print(json.dumps(register(db,json.loads(args.manifest.read_text())),indent=2))
+            elif args.command == 'attach-block-presentation':
+                from .blocks import attach_presentation
+                print(json.dumps(attach_presentation(db,json.loads(args.manifest.read_text())),indent=2))
             elif args.command == 'assess':
                 from .manager import assess
                 print(json.dumps(assess(db,{'service_id':args.service,'date':args.date,'days':args.days,

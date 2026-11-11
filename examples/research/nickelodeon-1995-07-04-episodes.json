@@ -1,0 +1,18 @@
+{
+  "service_id": "nickelodeon",
+  "timezone": "America/New_York",
+  "episodes": [
+    {
+      "date": "1995-07-04",
+      "title": "Alvin and the Chipmunks",
+      "episode_title": "Uncle Harry / Rock 'n' Robot",
+      "url": "https://nickstory.fandom.com/wiki/Alvin_and_the_Chipmunks"
+    },
+    {
+      "date": "1995-07-04",
+      "title": "The Busy World of Richard Scarry",
+      "episode_title": "The Best Birthday Present Ever / Patrick Pig Learns to Talk / Grouchy Mr. Gronkle",
+      "url": "https://nickstory.fandom.com/wiki/The_Busy_World_of_Richard_Scarry"
+    }
+  ]
+}

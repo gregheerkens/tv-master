@@ -99,15 +99,15 @@ class ResearchTest(unittest.TestCase):
         from retro_tv.records import import_records
         import_records(self.db,json.loads((ROOT/'examples/research/nickelodeon-service.json').read_text()))
         doc=json.loads((ROOT/'examples/research/nickelodeon-1995-07-04.json').read_text());batch=research.sideload(self.db,doc)
-        self.assertEqual(len(batch['pages'][0]['candidates']),43)
+        self.assertEqual(len(batch['pages'][0]['candidates']),44)
         self.assertEqual(self.db.execute('SELECT count(*) FROM historical_airing').fetchone()[0],0)
-        research.accept(self.db,{'page_id':batch['pages'][0]['id'],'selections':[{'index':i} for i in range(43)]})
+        research.accept(self.db,{'page_id':batch['pages'][0]['id'],'selections':[{'index':i} for i in range(44)]})
         report=assess(self.db,{'service_id':'nickelodeon','date':'1995-07-04','mode':'historical'})
-        self.assertEqual(report['known_schedule_percent'],91.7);self.assertEqual(report['exact_schedule_percent'],0)
+        self.assertEqual(report['known_schedule_percent'],93.8);self.assertEqual(report['exact_schedule_percent'],0)
         exported=research.export_bundle(self.db,batch['id']);self.assertEqual(exported['pages'][0]['url'],doc['pages'][0]['url'])
         second=research.sideload(self.db,exported)
-        research.accept(self.db,{'page_id':second['pages'][0]['id'],'selections':[{'index':i} for i in range(43)]})
-        self.assertEqual(self.db.execute('SELECT count(*) FROM historical_airing').fetchone()[0],43)
+        research.accept(self.db,{'page_id':second['pages'][0]['id'],'selections':[{'index':i} for i in range(44)]})
+        self.assertEqual(self.db.execute('SELECT count(*) FROM historical_airing').fetchone()[0],44)
         self.assertEqual(self.db.execute("SELECT count(*) FROM lineup_entry WHERE service_id='nickelodeon'").fetchone()[0],0)
 
     def test_period_bounds_and_unsafe_source_urls(self):

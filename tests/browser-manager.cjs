@@ -1,3 +1,4 @@
+// This maintenance/legacy check requires an explicit loopback serve --admin instance.
 // Run against the generated six-channel demo; restores any edited health settings.
 const {chromium}=require('playwright');const assert=require('node:assert/strict');
 (async()=>{
@@ -7,7 +8,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
     const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     const data=await (await page.request.get(base+'/api/manager')).json();original=data.health_standards.find(s=>s.id==='theme');
-    await page.goto(base+'/manager');await page.waitForSelector('.channel-card');
+    await page.goto(base+'/server-manager');await page.waitForSelector('.channel-card');
     await page.selectOption('#health-view','historical');
     await page.waitForFunction(()=>document.getElementById('health-standard-form').dataset.view==='historical'&&document.getElementById('health-standard-form').dataset.ready==='true');
     assert.match(await page.locator('#lineup-summary').innerText(),/need more research/);

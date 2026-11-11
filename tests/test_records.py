@@ -130,7 +130,7 @@ class LegacyMigrationTest(unittest.TestCase):
             db.execute('INSERT INTO broadcast VALUES (?,?,?,?,?,?,?)',('published','station',100,200,'Frozen',None,'missing'))
             before=list(db.execute('SELECT * FROM broadcast'));db.commit();db.close()
             db=connect(path)
-            self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],3)
+            self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],4)
             self.assertEqual(db.execute('SELECT content_id FROM asset_content WHERE asset_id="clip"').fetchone()[0],'asset:clip')
             self.assertEqual([tuple(r) for r in db.execute('SELECT * FROM broadcast')],before)
             db.close();db=connect(path)

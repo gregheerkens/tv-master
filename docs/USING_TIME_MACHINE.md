@@ -63,8 +63,8 @@ explicit substitutions are acceptable. Criteria change the assessment, not TV
 timing or published programming.
 
 Historical coverage is **unresearched**, **partial**, or **covered**. Unresearched
-time is not a missing-program list. Named missing episodes require exact imported
-airing evidence; a program-only listing does not establish an episode identity.
+time is not a missing-program list. Named missing episodes require a sourced episode identity; imported titles now
+create/match identities automatically. A program-only listing cannot identify an episode.
 Inferred/seasonal expectations retain their uncertainty.
 
 Acquisition recommendations:
@@ -99,7 +99,7 @@ physical cuts remain usable independently. A well-divided library bypasses it.
 | `POST /api/time-machine/launch` | Tune a new context or resume the existing one |
 | `GET /api/guide?context=…` | Same guide, selected timeline |
 | `GET /api/tune?service=…&context=…` | Current segment/offset, never arbitrary playback time |
-| `GET /api/manager?standard=historical` | Mode-based lineup health |
+| `GET /api/broadcasts/health?mode=historical` | Mode-based lineup health |
 | `POST /api/manager/health-standard` | Define assessment criteria only |
 
 Selection rules support tags, excluded tags, included/excluded content identities
@@ -113,3 +113,8 @@ usable without an AI provider or a hosted account.
 [manager recommendations](screenshots/manager-recommendations.png) use generated
 test footage and explicitly synthetic episode/listing evidence. They are UI
 examples, not claims about actual historical programming.
+
+The viewer now enters Time Machine and Block Party through separate manager
+buttons; representative templates live in Block Party. Content/research tools
+have moved to the server console. See `BROADCAST_SETUP.md` and `COMPLETE_BLOCKS.md`
+for active reception layouts and intact local/remote source recordings.

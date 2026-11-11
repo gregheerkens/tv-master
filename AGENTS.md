@@ -2,6 +2,18 @@
 
 ## Latest authorized scope
 
+The latest user direction is documented in ADR 0007 and 0008. Default startup is
+PIP guide → TV MASTER MANAGER → Time Machine, Channel Surf, Block Party, Manage
+Broadcasts. Viewer frontends never serve file ingestion, ripping, organization or
+research tools; CLI and an explicit loopback-only server console own those tasks.
+Use active region/reception/provider/tier layouts to scope channels and eligibility.
+Live meters use library/manifest data; simulation belongs only to explicit Test UI.
+Source episode titles are usable identities with small hover/focus flags. Preserve
+citations internally without repeatedly asking users to verify community listings.
+Complete local/opt-in remote recordings keep their original bracket and timing.
+Optional cuts/presentations never move their anchor or rewrite published rows.
+
+
 Read `docs/PRODUCT_MODES.md` and ADR 0005 for the latest product direction:
 **Time Machine** selects an independent historical reconstruction context;
 **Channel Surfing** joins a fixed timeline that advances without background video
@@ -11,8 +23,8 @@ reroll rule below protects Channel Surfing and published entries; it must not be
 interpreted as prohibiting the separately requested Time Machine destination flow.
 
 User-adjustable health standards never change broadcast timing. Unknown historical
-coverage must stay unknown. Named missing-episode recommendations require exact
-imported airing evidence; do not invent inventory gaps from unresearched periods.
+coverage must stay unknown. Named missing-episode recommendations require an identified episode from sourced
+listings; do not invent inventory gaps from unresearched periods.
 
 Read `docs/adr/ADR-0001-standalone-block-station.md` alongside the original canon.
 The user explicitly prioritizes a standalone prepared-library station, optional

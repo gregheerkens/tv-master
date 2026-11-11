@@ -107,7 +107,7 @@ def local_stamp(day,minute,zone):
     return stamp.isoformat()
 
 
-def parse_html(body,day,timezone,adapter):
+def parse_html(body,day,timezone,adapter,*,include_tail=False):
     parser=ListingHTML();parser.feed(body);rows=[];warnings=[]
     source_day=date.fromisoformat(day)
     label=f'{MONTHS[source_day.month-1]} {source_day.day}, {source_day.year}'
@@ -160,9 +160,30 @@ def parse_html(body,day,timezone,adapter):
             warnings.append(f'Uncertain duration at {current["start"]}; slot omitted');continue
         current={k:v for k,v in current.items() if k!='group'}
         candidates.append({**current,'end':following['start'],'evidence_state':'schedule_exact','content_id':None})
-    warnings.append('Final row has no confirmed end boundary and is omitted. Blank slots remain unknown. Episode text is a source claim, not an automatic exact-episode match.')
+    if include_tail and grouped and grouped[-1] and grouped[-1]['title'].casefold() not in UNKNOWN:
+        tail={k:v for k,v in grouped[-1].items() if k!='group'};candidates.append({**tail,'end':None,'pending_boundary':True})
+    warnings.append('Imported listings may need a quick check; source details are available on each slot.')
     if not candidates:raise ValueError('No bounded program slots; no coverage claimed')
     return candidates,warnings
+
+
+
+def close_tail(tail,following,next_day,timezone):
+    """Poll next day first; represent inclusive 23:59 as an exclusive midnight end."""
+    from .identities import show_key,episode_key
+    midnight=local_stamp(date.fromisoformat(next_day),0,ZoneInfo(timezone))
+    first=following[0] if following else None
+    if not first or first['start']!=midnight:raise ValueError('The first slot of the next day is not yet known')
+    same=first and first['start']==midnight and show_key(first['title'])==show_key(tail['title'])
+    if same and tail.get('episode_title') and first.get('episode_title'):
+        same=episode_key(tail['episode_title'])==episode_key(first['episode_title'])
+    end=first.get('end') if same else midnight
+    if not end:raise ValueError('The next-day continuation still has no end boundary')
+    result={**tail,'end':end,'boundary_inferred':True,
+        'end_basis':'next-day continuation' if same else 'next-day first slot differs; inferred 23:59 inclusive'}
+    result.pop('pending_boundary',None)
+    if timestamp(end)-timestamp(tail['start'])>12*3600000:raise ValueError('Late slot continuation is too long')
+    return result
 
 
 def public_url(url):
@@ -222,7 +243,7 @@ def detail(db,ident):
     if not batch:raise ValueError('unknown research batch')
     pages=[]
     for row in db.execute('SELECT * FROM research_page WHERE batch_id=? ORDER BY day',(ident,)):
-        page=dict(row);page.pop('body');page['candidates']=json.loads(page['candidates']);page['warnings']=json.loads(page['warnings']);page['accepted_listings']=[dict(r) for r in db.execute('SELECT r.candidate_index,a.id,a.content_id,a.evidence_state,a.start_ms,a.end_ms FROM research_acceptance r JOIN historical_airing a ON a.id=r.airing_id WHERE r.page_id=?',(page['id'],))];pages.append(page)
+        page=dict(row);page.pop('body');boundary=db.execute('SELECT status,next_url,error FROM research_boundary WHERE page_id=?',(page['id'],)).fetchone();page['boundary']=dict(boundary) if boundary else None;page['candidates']=json.loads(page['candidates']);page['warnings']=json.loads(page['warnings']);page['accepted_listings']=[dict(r) for r in db.execute('SELECT r.candidate_index,a.id,a.content_id,a.evidence_state,a.start_ms,a.end_ms FROM research_acceptance r JOIN historical_airing a ON a.id=r.airing_id WHERE r.page_id=?',(page['id'],))];pages.append(page)
     return {**dict(batch),'pages':pages}
 
 
@@ -236,15 +257,34 @@ def overview(db):
 def fetch_page(db,value,fetcher=None):
     page=db.execute('SELECT * FROM research_page WHERE id=?',(value['page_id'],)).fetchone()
     if not page:raise ValueError('unknown research page')
-    if page['status'] in ('staged','accepted'):return detail(db,page['batch_id'])
+    if page['status']=='accepted':return detail(db,page['batch_id'])
+    cached=page['status']=='staged'
+    if cached and not (value.get('retry_boundary') or value.get('next_html')):return detail(db,page['batch_id'])
     batch=db.execute('SELECT * FROM research_batch WHERE id=?',(page['batch_id'],)).fetchone()
     if batch['adapter']=='sideload':raise ValueError('import a research JSON bundle for a sideload batch')
     try:
-        body=value.get('html')
+        body=value.get('html',page['body'] if cached else None)
         if body is None:body=(fetcher or fetch_html)(page['url'])
         if not isinstance(body,str) or len(body.encode())>MAX_BYTES:raise ValueError('saved HTML must be at most 1.5 MB')
-        candidates,warnings=parse_html(body,page['day'],batch['timezone'],batch['adapter'])
-        with db:db.execute('UPDATE research_page SET fetched_at=?,sha256=?,body=?,status=\'staged\',error=NULL,candidates=?,warnings=? WHERE id=? AND status IN (\'pending\',\'failed\')',
+        parsed,warnings=parse_html(body,page['day'],batch['timezone'],batch['adapter'],include_tail=True)
+        candidates=[r for r in parsed if r.get('end')]
+        tail=next((r for r in parsed if not r.get('end')),None)
+        if tail and datetime.fromisoformat(tail['start']).hour>=23:
+            next_day=str(date.fromisoformat(page['day'])+timedelta(days=1))
+            next_url=value.get('next_day_url') or page_url(batch['url_template'],next_day)
+            try:
+                next_body=value.get('next_html')
+                if next_body is None:
+                    if next_url==page['url']:raise ValueError('Next-day URL is needed for this source')
+                    next_body=(fetcher or fetch_html)(next_url)
+                following,_=parse_html(next_body,next_day,batch['timezone'],batch['adapter'],include_tail=True)
+                resolved=close_tail(tail,following,next_day,batch['timezone'])
+                candidates.append(resolved)
+                with db:db.execute('INSERT OR REPLACE INTO research_boundary VALUES (?,?,?,?,?,?)',(page['id'],json.dumps(tail),next_url,'resolved',None,next_body))
+            except (OSError,ValueError) as error:
+                warnings.append('Late slot: next-day lookup is pending.')
+                with db:db.execute('INSERT OR REPLACE INTO research_boundary VALUES (?,?,?,?,?,?)',(page['id'],json.dumps(tail),next_url,'pending',str(error),None))
+        with db:db.execute('UPDATE research_page SET fetched_at=?,sha256=?,body=?,status=\'staged\',error=NULL,candidates=?,warnings=? WHERE id=? AND status IN (\'pending\',\'failed\',\'staged\')',
             (utc_now(),hashlib.sha256(body.encode()).hexdigest(),body,json.dumps(candidates),json.dumps(warnings),page['id']))
     except (OSError,ValueError) as error:
         with db:db.execute("UPDATE research_page SET status='failed',error=? WHERE id=? AND status IN ('pending','failed')",(str(error),page['id']))
@@ -313,13 +353,15 @@ def accept(db,value):
         a,b=timestamp(row['start']),timestamp(row['end'])
         key=hashlib.sha256(json.dumps([batch['service_id'],a,b,row['title']],ensure_ascii=False).encode()).hexdigest()[:28]
         provenance={'url':page['url'],'retrieved_at':page['fetched_at'],'sha256':page['sha256'],'research_page':page['id'],
-            'source_episode_text':row.get('episode_title',''),'review_note':selection.get('note',''),'end_basis':row.get('end_basis','next listed start; final unbounded slot omitted')}
-        if content_id is None:content_id='research-program:'+hashlib.sha256(clean(row['title']).casefold().encode()).hexdigest()[:24]
+            'source_episode_text':row.get('episode_title',''),'review_note':selection.get('note',''),'needs_check':True,'boundary_source':row.get('boundary_source'),'episode_reference':row.get('episode_reference'),'episode_origin':row.get('episode_origin','listing'),'boundary_inferred':row.get('boundary_inferred',False),'end_basis':row.get('end_basis','next listed start')}
+        if content_id is None:content_id='auto:'+str(index)
         prepared.append((index,('research:'+key,batch['service_id'],content_id,row['title'],a,b,evidence,json.dumps(provenance))))
     with db:
         for index,row in prepared:
-            if row[2].startswith('research-program:'):
-                db.execute("INSERT OR IGNORE INTO content(id,kind,title) VALUES (?,'program',?)",(row[2],row[3]))
+            if row[2].startswith('auto:'):
+                from .identities import resolve
+                candidate=rows[index];ident=resolve(db,candidate['title'],candidate.get('episode_title',''))
+                row=(*row[:2],ident,*row[3:])
             existing=db.execute('SELECT * FROM historical_airing WHERE id=?',(row[0],)).fetchone()
             if existing:
                 if tuple(existing)[1:7]!=row[1:7]:raise ValueError('conflicting accepted listing; existing evidence was preserved')
@@ -337,3 +379,32 @@ def export_bundle(db,ident):
     return {'version':1,'service_id':batch['service_id'],'start_date':batch['start_date'],'until_date':batch['until_date'],'timezone':batch['timezone'],
         'pages':[{'day':p['day'],'url':p['url'],'retrieved_at':p['fetched_at'],'retrieval_method':'TV Master '+batch['adapter'],
                   'candidates':p['candidates'],'warnings':p['warnings']} for p in batch['pages'] if p['status'] in ('staged','accepted')]}
+
+
+def enrich_episodes(db,value):
+    """Merge supplemental episode references into matching slots, never shift time.
+
+    A date-only premiere lookup is usable when the show has one slot that day;
+    multiple possible slots stay unresolved. Such identities carry a small flag.
+    """
+    from .identities import show_key,resolve
+    service=value['service_id'];zone=ZoneInfo(value.get('timezone') or db.execute('SELECT timezone FROM state').fetchone()[0]);updated=0;unresolved=[]
+    with db:
+        for fact in value['episodes']:
+            if not fact.get('url') or not fact.get('episode_title'):raise ValueError('Episode references need a title and source URL')
+            if fact.get('start'):
+                matches=list(db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms=?',(service,timestamp(fact['start']))))
+            else:
+                day=date.fromisoformat(fact['date']);a=local_stamp(day,0,zone);b=local_stamp(day+timedelta(days=1),0,zone)
+                matches=list(db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms>=? AND start_ms<?',(service,timestamp(a),timestamp(b))))
+            matches=[r for r in matches if show_key(r['title'])==show_key(fact['title'])]
+            if len(matches)!=1:unresolved.append(fact);continue
+            row=matches[0];provenance=json.loads(row['provenance']);provenance=provenance if isinstance(provenance,dict) else {'original':provenance}
+            current=provenance.get('source_episode_text')
+            from .identities import episode_key
+            if current and episode_key(current)!=episode_key(fact['episode_title']):unresolved.append(fact);continue
+            ident=resolve(db,row['title'],fact['episode_title'])
+            provenance.update(source_episode_text=fact['episode_title'],episode_reference=fact['url'],needs_check=True,
+                episode_origin='additional listing' if fact.get('start') else 'premiere-date lookup; one matching slot')
+            db.execute('UPDATE historical_airing SET content_id=?,provenance=? WHERE id=?',(ident,json.dumps(provenance),row['id']));updated+=1
+    return {'status':f'Added {updated} episode titles','unresolved':unresolved}

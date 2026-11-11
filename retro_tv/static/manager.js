@@ -24,7 +24,7 @@ async function load(){
     $('channel-health').replaceChildren();
     for(const c of dashboard.channels){
       const card=node('article',undefined,`channel-card ${c.playable_percent<20?'bad':c.playable_percent<99?'warn':''}`);
-      const progress=node('div',undefined,'progress'),bar=node('span');bar.style.width=`${Math.min(100,c.playable_percent)}%`;progress.append(bar);
+      const progress=node('div',undefined,'progress'),bar=node('span');bar.style.width=`${Math.min(100,c.assessed_playable_percent)}%`;progress.append(bar);
       card.append(node('h3',c.name),badge(c.assessment_health.status),node('strong',`${c.assessed_playable_percent}%`),node('p',`${hours(c.assessed_program_ms)} program footage · ${hours(c.assessed_continuity_ms)} ads / continuity\n${c.assessed_gap_blocks} blocks need attention · ${c.quality_alerts} segment alerts`),progress,button('Inspect this channel →',()=>{$('plan-service').value=c.id;$('plan-mode').value='channel';modeChanged();$('planner').scrollIntoView({behavior:'smooth'});}));
       $('channel-health').append(card);
     }

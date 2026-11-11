@@ -13,13 +13,13 @@
 - `retro_tv/companion.py`: separate optional FFmpeg detector and serial job
   service, persistent review documents, reviewed library export and optional cuts.
 - `retro_tv/demo.py`, `examples/`: self-generated test-pattern demo and editable
-  station/library manifests. No actual TV programs or historical lineup claims.
+  station/library manifests. No actual TV programs or historical lineup claims in the generated demo.
 - `docs/adr/ADR-0001-standalone-block-station.md`: records the user's scope change
   and initial Python/SQLite/browser delivery decisions. Original handoff preserved.
 
 ## Validation performed
 
-- 68 Python tests passed, including a real FFmpeg detection → review → export →
+- 81 Python tests passed, including a real FFmpeg detection → review → export →
   catalog import → physical extraction round trip. The archival fixture remained
   byte-for-byte unchanged.
 - Concurrent writers produced one contiguous, nonoverlapping schedule.
@@ -35,7 +35,7 @@
 - Companion HTTP checks passed for queued analysis, persisted pending review and
   rejecting source paths outside the configured media root.
 - Research tests cover cached staging, partial acceptance, rowspans, midnight/DST,
-  failed fetches, conflicts/rollback, exact-episode gating and the real 43-slot
+  failed fetches, conflicts/rollback, exact-episode gating and the real 44-slot
   sideload. Chromium also verified research review, accepted subsets and JSON export.
 - Python compile checks and JavaScript syntax checks passed.
 
@@ -49,7 +49,7 @@ repairs can propagate without rewriting published timelines or copying videos.
 See `USING_TIME_MACHINE.md`, `PRODUCT_MODES.md` and ADR 0006.
 
 Manager standards now distinguish operation, historical recreation and theme
-capacity. Lineup counts/health are mode-based. Exact imported episode gaps group
+capacity. Lineup counts/health are mode-based. Identified imported episode gaps group
 by season/range and offer DVD searches; period ad variety shortages offer video
 searches. Unresearched history stays unknown, and owned/offline/excluded recordings
 are distinguished from acquisition needs. Period research now supports daily wiki tables, The Kids Block Blog+ posts, saved
@@ -107,6 +107,25 @@ Next narrow milestones: validate one sourced historical block against owned medi
 and test key delivery on a physical TV/browser or wrapper; then broaden source-specific
 history adapters and reference-backed companion identification. Keep the prepared-
 library path and immutable-guide tests passing throughout.
+
+The latest viewer frontend opens in PIP and has a four-mode SVG manager. Reception
+setups select region/provider/tier/channel maps, with real library meters and an
+isolated Test UI. Content/research/file routes are server-only by default. Episode
+identities now retain source titles, normalize punctuation/segments/numbered labels,
+and support aliases and supplemental references. A migration upgrades old annotation
+imports without changing published rows. Late slots poll the next day; a different
+midnight program implies an inclusive 23:59 end (stored exclusive midnight).
+
+Local and explicitly enabled remote complete blocks now remain intact at fixed
+broadcast/source anchors. Current playback redirects to direct video sources;
+remote health is measured on playback. Approved same-timeline local presentations
+preserve original references and anchors. Complete-block footage has its own tally.
+All six browser checks passed, including real HTTPS range playback of generated
+video at the expected anchored source offset. A separate runtime capture played
+a real 90-minute generated file at 40:00 when joining its bracket at 9:10, using
+a 9:00 cue at source minute 30. No physical TV was tested and no
+actual Internet Archive TV video was fetched in that integration check. See
+`BROADCAST_SETUP.md`, `COMPLETE_BLOCKS.md` and ADR 0007/0008.
 
 The hosted repository is `gregheerkens/tv-master`. GitHub app access was
 reconnected and the project was uploaded through that connection. The cloud

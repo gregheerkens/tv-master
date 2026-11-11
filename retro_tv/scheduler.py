@@ -6,6 +6,9 @@ import time
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from .records import Policy, backfill
+from . import broadcasts
+from . import blocks
+from .identities import key as title_key
 
 HORIZON_MS = 72 * 60 * 60 * 1000
 SLOT_MS = 30 * 60 * 1000
@@ -88,7 +91,8 @@ def compose(db, service, start, state):
     Date eligibility covers the entire block, including a local midnight crossing.
     Source paths, hashes, offsets and display titles are snapshotted for playout.
     """
-    zone = ZoneInfo(state['timezone'])
+    if blocks.compose(db,service,start,state):return
+    zone = ZoneInfo(broadcasts.timezone(db))
     day = datetime.fromtimestamp(start/1000, zone).date().isoformat()
     policy = Policy(db)
     assets = {r['id']: dict(r) for r in db.execute(
@@ -99,7 +103,10 @@ def compose(db, service, start, state):
                         (service,start,start)).fetchone() if use_history else None
     override=db.execute('SELECT * FROM airing_override WHERE airing_id=?',(expected['id'],)).fetchone() if expected else None
     following=db.execute('SELECT min(start_ms) FROM historical_airing WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0] if use_history else None
+    next_block=db.execute('SELECT min(start_ms) FROM complete_block WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0]
+    if next_block:following=min(following,next_block) if following else next_block
     boundary=expected['end_ms'] if expected else min(start+SLOT_MS,following) if following else start+SLOT_MS
+    if next_block:boundary=min(boundary,next_block)
     historical_mode=use_history and policy.profiles.get(service,{}).get('mode')=='historical'
     def identity_matches(program_id,target):
         identity=policy.program_ids.get(program_id);seen=set()
@@ -115,7 +122,7 @@ def compose(db, service, start, state):
                 if row['id']!=override['program_id']:continue
             elif expected['content_id']:
                 if not identity_matches(row['id'],expected['content_id']):continue
-            elif row['title'].casefold()!=expected['title'].casefold():continue
+            elif title_key(row['title'])!=title_key(expected['title']):continue
         elif historical_mode:
             continue
         parts = [assets[p] for p in json.loads(row['parts'])]
@@ -240,9 +247,9 @@ def guide(db, now):
     from .health import timeline_health
     end = now+HORIZON_MS
     channels = []
-    zone = ZoneInfo(db.execute('SELECT timezone FROM state').fetchone()[0])
+    zone = ZoneInfo(broadcasts.timezone(db))
     day = datetime.fromtimestamp(now/1000, zone).date().isoformat()
-    for service in db.execute('SELECT service.*,lineup_entry.channel FROM service JOIN lineup_entry ON service.id=lineup_entry.service_id JOIN lineup ON lineup.id=lineup_entry.lineup_id WHERE lineup.valid_from<=? AND lineup.valid_until>? ORDER BY length(lineup_entry.channel),lineup_entry.channel', (day,day)):
+    for service in broadcasts.channels(db,day):
         first_start=db.execute('SELECT min(start_ms) FROM broadcast WHERE service_id=? AND end_ms>?',(service['id'],now)).fetchone()[0]
         health=timeline_health(db,service['id'],first_start if first_start is not None else now,end)
         entries = []
@@ -252,6 +259,15 @@ def guide(db, now):
             entry['health']=health.get(item['id'],{'status':'missing','reasons':['No segment metadata']})
             content=db.execute('''SELECT c.episode_title,c.description,c.original_air_date FROM content c
                   JOIN program_content p ON p.content_id=c.id WHERE p.program_id=?''',(item['program_id'],)).fetchone()
+            context=db.execute('SELECT a.content_id,a.provenance FROM historical_airing a JOIN broadcast_context c ON c.airing_id=a.id WHERE c.broadcast_id=?',(item['id'],)).fetchone()
+            if context:
+                listed=db.execute('SELECT episode_title,description,original_air_date FROM content WHERE id=?',(context['content_id'],)).fetchone()
+                if listed:content=listed
+                entry['source_note']=json.loads(context['provenance']).get('source_episode_text','Imported listing')
+            if item['evidence']=='recorded_block':
+                entry['source_note']='Complete recording · original broadcast bracket'
+                block=db.execute('SELECT known_points,start_ms,end_ms FROM complete_block WHERE service_id=? AND start_ms<=? AND end_ms>=?',(service['id'],item['start_ms'],item['end_ms'])).fetchone()
+                if block:entry['block']={**dict(block),'known_points':json.loads(block['known_points'])}
             entry['content']=dict(content) if content else None
             entry['visible_start_ms'] = max(now, item['start_ms'])
             entry['visible_end_ms'] = min(end, item['end_ms'])
@@ -269,6 +285,7 @@ def tune(db, service, now):
         raise ValueError('service is not scheduled')
     result = dict(row)
     result.pop('path')
+    result['remote']=blocks.stream(db,row['source_hash']) is not None and blocks.presentation(db,row['source_hash']) is None
     result['offset_ms'] = row['source_in_ms']+now-row['start_ms']
     result['remaining_ms'] = row['end_ms']-now
     result['now_ms'] = now

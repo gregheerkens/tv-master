@@ -1,3 +1,4 @@
+// This maintenance/legacy check requires an explicit loopback serve --admin instance.
 // Run against a synthetic demo. Adds one explicitly synthetic historical test listing.
 const {chromium}=require('playwright');const assert=require('node:assert/strict');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});

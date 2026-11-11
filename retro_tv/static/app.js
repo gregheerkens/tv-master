@@ -45,9 +45,9 @@ function selected() {
 }
 function details() {
   const {c,e} = selected(); if (!c || !e) return;
-  $('details-title').textContent = e.title;
+  $('details-title').textContent = e.title+(e.content?.episode_title?' · '+e.content.episode_title:'');$('details-title').title=e.source_note||'';
   const h = e.health, reason = h.reasons?.join('. ') || 'No known coverage alerts.';
-  $('details-body').textContent = `${c.channel} ${c.name} · ${time(e.start_ms,true)} – ${time(e.end_ms)}. ${statuses[h.status]}. ${reason} Schedule evidence: ${e.evidence.replaceAll('_',' ')}. ${e.start_ms > data.now_ms ? 'This is a future listing. Watching tunes the channel at the current station time.' : 'The broadcast follows the station clock.'}`;
+  $('details-body').textContent = `${c.channel} ${c.name} · ${time(e.start_ms,true)} – ${time(e.end_ms)}. ${statuses[h.status]}. ${reason} ${e.start_ms > data.now_ms ? 'This is a future listing. Watching tunes the channel at the current station time.' : 'The broadcast follows the station clock.'}`;
   $('details').showModal(); $('details-watch').focus();
 }
 function render() {
@@ -81,7 +81,7 @@ function render() {
       button.setAttribute('aria-selected',String(focused)); button.tabIndex = focused ? 0 : -1;
       button.style.left = `${(start-windowStart)/WINDOW*100}%`; button.style.width = `${(end-start)/WINDOW*100}%`;
       button.setAttribute('aria-label',`${e.title}, ${time(e.start_ms)} to ${time(e.end_ms)}, ${statuses[h.status]}`);
-      button.append(text('span',e.title,'cell-title'),text('span',`${statuses[h.status]} · ${e.evidence.replaceAll('_',' ')}`,'cell-note'));
+      button.append(text('span',e.title,'cell-title'));if(e.content?.episode_title)button.append(text('span',e.content.episode_title,'cell-note'));button.title=e.source_note||statuses[h.status];if(e.source_note){const flag=text('span','?','source-flag');flag.title='From an imported listing · '+e.source_note;button.append(flag);}
       button.onclick = () => { selectedChannel = data.channels.indexOf(c); cursor = Math.max(data.now_ms,e.start_ms); futureBrowse = e.start_ms > data.now_ms; render(); e.start_ms > data.now_ms ? details() : select(c.id); };
       track.append(button);
     }
@@ -94,8 +94,8 @@ function render() {
     $('selected-status').textContent = statuses[e.health.status];
     $('selected-time').textContent = `${time(e.start_ms,true)} – ${time(e.end_ms)}`;
     const h=e.health;
-    $('selected-description').textContent = h.reasons?.join(' · ') || e.content?.description || e.content?.episode_title || 'Description unavailable.';
-    $('selected-evidence').textContent = `${e.evidence.replaceAll('_',' ').toUpperCase()} · ${Math.round((h.program_ms || 0)/60000)} MIN OF PROGRAM MEDIA`;
+    $('selected-description').textContent = (e.block?.known_points?.length?'Complete block · '+e.block.known_points.map(p=>`${p.title||'Known airing'} at ${time(Date.parse(p.aired_at))}`).join(' · '):'') || e.content?.episode_title || e.content?.description || h.reasons?.join(' · ') || 'Description unavailable.';
+    $('selected-evidence').textContent = ''; $('selected-evidence').title=e.source_note||'';
   }
   const line = (Date.now() + skew - windowStart) / WINDOW * 100;
   $('now-line').hidden = line < 0 || line > 100;
@@ -113,6 +113,7 @@ async function refresh() {
     if(data.context)$('context-label').textContent=data.context.mode==='surfing'?'CHANNEL SURFING':'TIME MACHINE';
     if (focused) [...document.querySelectorAll('[data-service]')].find(b=>b.dataset.service===focused)?.focus({preventScroll:true});
     else if (focusGrid) document.querySelector('.program-cell.focused')?.focus({preventScroll:true});
+    if(channel&&!data.channels.some(c=>c.id===channel)){channel=null;video.pause();video.removeAttribute('src');video.load();}
     if (!channel && data.channels.length) select(data.context?.service_id||new URLSearchParams(location.search).get('channel')||data.channels[0].id,false);
   } catch(error) { toast(error.message); }
 }
@@ -139,7 +140,7 @@ async function tune() {
       video.onloadedmetadata=()=>{
         if(gen!==generation)return;
         video.currentTime=(s.offset_ms+Math.max(0,Date.now()+skew-s.now_ms))/1000;
-        video.play().then(()=>{$('slate').hidden=true;$('resume').hidden=true;}).catch(()=>{$('resume').hidden=false;slate('Press OK to watch.',s.title);});
+        video.play().then(()=>{if(s.remote)reportStream(s.id,'online');$('slate').hidden=true;$('resume').hidden=true;}).catch(()=>{$('resume').hidden=false;slate('Press OK to watch.',s.title);});
       };
     } else if(video.readyState>=1) {
       const expected=(s.offset_ms+Math.max(0,Date.now()+skew-s.now_ms))/1000;
@@ -167,7 +168,7 @@ function numberTune() {
   if(c){selectedChannel=data.channels.indexOf(c);select(c.id);}else toast(`Channel ${digits} is not in this lineup.`);
   digits='';
 }
-video.onerror=()=>slate('Source unavailable','Check this recording in TV MASTER Manager. The published schedule stays fixed.');
+video.onerror=()=>slate('Source unavailable','The server couldn’t open this recording. Try another channel for now.');
 video.onended=()=>{slate('The next segment is coming up.','The broadcast follows the station clock.');tune();};
 $('resume').onclick=()=>{segment=null;tune();};
 $('guide-toggle').onclick=cycleGuide;$('info-toggle').onclick=details;
@@ -197,3 +198,6 @@ setInterval(()=>{if(segment&&Date.now()+skew>=segment.end_ms){segment=null;tune(
 setInterval(tune,10000);setInterval(refresh,30000);refresh();
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(channel){segment=null;tune();}});
+
+function reportStream(id,status){fetch(scoped('/api/playback-health'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({segment_id:id,status})}).catch(()=>{});}
+video.addEventListener('error',()=>{if(segment?.remote)reportStream(segment.id,'offline');});

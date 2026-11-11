@@ -1,8 +1,14 @@
 """Actual-file and published-timeline health. Never confuses a slate with footage."""
 from pathlib import Path
+from . import blocks
 
 
 def resolve_path(db,path,digest=None):
+    if digest:
+        local=blocks.presentation(db,digest)
+        if local:return local
+        remote=blocks.stream(db,digest)
+        if remote:return remote['url'] if remote['enabled'] and remote['availability']=='online' else None
     if path and Path(path).is_file():return path
     if digest:
         row=db.execute('SELECT path FROM source_location WHERE sha256=?',(digest,)).fetchone()
@@ -17,6 +23,7 @@ def timeline_health(db,service,start,end):
     quality_assets={r[0] for r in db.execute('SELECT asset_id FROM quality_alert WHERE resolved_at IS NULL AND asset_id IS NOT NULL')}
     quality_sources={r[0] for r in db.execute('SELECT source_id FROM quality_alert WHERE resolved_at IS NULL AND source_id IS NOT NULL')}
     asset_sources=dict(db.execute('SELECT id,source_id FROM asset'))
+    source_ids=dict(db.execute('SELECT sha256,id FROM source'))
     identities=dict(db.execute('SELECT asset_id,content_id FROM asset_content'))
     coverage={}
     bad_scores={r[0] for r in db.execute('SELECT asset_id FROM recording_quality WHERE score<40')}
@@ -24,8 +31,8 @@ def timeline_health(db,service,start,end):
     for row in db.execute('''SELECT s.*,b.program_id,b.evidence FROM segment s JOIN broadcast b ON b.id=s.broadcast_id
         WHERE b.service_id=? AND s.start_ms<? AND s.end_ms>? ORDER BY s.start_ms''',(service,end,start)):
         item=result.setdefault(row['broadcast_id'],{'playable_ms':0,'slate_ms':0,'missing_file_ms':0,
-            'program_ms':0,'commercial_ms':0,'continuity_ms':0,'quality_alerts':0,'reasons':set(),
-            'evidence':row['evidence'],'has_program':row['program_id'] is not None})
+            'program_ms':0,'block_ms':0,'remote_unknown_ms':0,'commercial_ms':0,'continuity_ms':0,'quality_alerts':0,'reasons':set(),
+            'evidence':row['evidence'],'has_program':row['program_id'] is not None or row['evidence']=='recorded_block'})
         duration=min(end,row['end_ms'])-max(start,row['start_ms'])
         if row['kind']=='slate':
             item['slate_ms']+=duration;item['reasons'].add(row['reason'] or 'Unfilled segment')
@@ -34,11 +41,13 @@ def timeline_health(db,service,start,end):
             tally=coverage.setdefault(row['broadcast_id'],{})
             key=(row['kind'],identities.get(row['asset_id']))
             tally[key]=tally.get(key,0)+duration
-            field='program_ms' if row['kind']=='program' else 'commercial_ms' if row['kind']=='commercial' else 'continuity_ms'
+            field='block_ms' if row['kind']=='block' else 'program_ms' if row['kind']=='program' else 'commercial_ms' if row['kind']=='commercial' else 'continuity_ms'
             item[field]+=duration
         else:
-            item['missing_file_ms']+=duration;item['reasons'].add('Source file unavailable')
-        if row['asset_id'] in quality_assets|bad_scores or asset_sources.get(row['asset_id']) in quality_sources:
+            remote=blocks.stream(db,row['source_hash'])
+            if remote and remote['availability']=='unknown':item['remote_unknown_ms']+=duration;item['reasons'].add('Remote stream not checked yet')
+            else:item['missing_file_ms']+=duration;item['reasons'].add('Source file unavailable')
+        if row['asset_id'] in quality_assets|bad_scores or asset_sources.get(row['asset_id']) in quality_sources or source_ids.get(row['source_hash']) in quality_sources:
             item['quality_alerts']+=1
     for ident,item in result.items():
         used={}
@@ -51,7 +60,8 @@ def timeline_health(db,service,start,end):
                 available=coverage[ident][key]-used.get(key,0)
                 take=min(remaining,max(0,available));used[key]=used.get(key,0)+take;remaining-=take
             if remaining:item['reasons'].add('Missing known '+requirement['kind']+': '+requirement['note'])
-        if item['missing_file_ms']:status='offline'
+        if item['remote_unknown_ms']:status='unknown'
+        elif item['missing_file_ms']:status='offline'
         elif not item['has_program']:status='unknown' if 'No historical listing for this time' in item['reasons'] else 'missing'
         elif item['evidence']=='substituted':status='substituted'
         elif item['slate_ms'] or item['quality_alerts'] or item['reasons']:status='partial'

@@ -18,6 +18,8 @@ def connect(path):
     db.executescript(Path(__file__).with_name('timelines.sql').read_text())
     db.executescript(Path(__file__).with_name('recommendations.sql').read_text())
     db.executescript(Path(__file__).with_name('research.sql').read_text())
+    db.executescript(Path(__file__).with_name('broadcasts.sql').read_text())
+    db.executescript(Path(__file__).with_name('blocks.sql').read_text())
     if db.execute('PRAGMA user_version').fetchone()[0] < 2:
         from .records import backfill
         with db:
@@ -27,6 +29,11 @@ def connect(path):
         with db:
             db.execute("INSERT OR IGNORE INTO source_ingest SELECT id,'legacy_unknown','{\"kind\":\"legacy_unknown\"}' FROM source")
             db.execute('PRAGMA user_version=3')
+    if db.execute('PRAGMA user_version').fetchone()[0] < 4:
+        from .identities import backfill_listed_episodes
+        with db:
+            backfill_listed_episodes(db)
+            db.execute('PRAGMA user_version=4')
     return db
 
 

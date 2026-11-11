@@ -144,9 +144,11 @@
           "start": "1995-07-04T09:30:00-04:00",
           "end": "1995-07-04T10:00:00-04:00",
           "title": "The Busy World of Richard Scarry",
-          "episode_title": "",
+          "episode_title": "The Best Birthday Present Ever / Patrick Pig Learns to Talk / Grouchy Mr. Gronkle",
           "evidence_state": "schedule_exact",
-          "end_basis": "next explicit listing start on source page"
+          "end_basis": "next explicit listing start on source page",
+          "episode_origin": "premiere-date lookup; one matching slot",
+          "episode_reference": "https://nickstory.fandom.com/wiki/The_Busy_World_of_Richard_Scarry"
         },
         {
           "start": "1995-07-04T10:00:00-04:00",
@@ -208,9 +210,11 @@
           "start": "1995-07-04T13:30:00-04:00",
           "end": "1995-07-04T14:00:00-04:00",
           "title": "Alvin and the Chipmunks",
-          "episode_title": "",
+          "episode_title": "Uncle Harry / Rock 'n' Robot",
           "evidence_state": "schedule_exact",
-          "end_basis": "next explicit listing start on source page"
+          "end_basis": "next explicit listing start on source page",
+          "episode_origin": "premiere-date lookup; one matching slot",
+          "episode_reference": "https://nickstory.fandom.com/wiki/Alvin_and_the_Chipmunks"
         },
         {
           "start": "1995-07-04T14:00:00-04:00",
@@ -355,13 +359,23 @@
           "episode_title": "What Price Bobby",
           "evidence_state": "schedule_exact",
           "end_basis": "next explicit listing start on source page"
+        },
+        {
+          "start": "1995-07-04T23:30:00-04:00",
+          "end": "1995-07-05T00:00:00-04:00",
+          "title": "Mary Tyler Moore",
+          "episode_title": "His Two Right Arms",
+          "evidence_state": "schedule_exact",
+          "boundary_inferred": true,
+          "end_basis": "Polled July 5: first slot is The Dick Van Dyke Show / The Great Petrie Fortune. Prior slot ends at 23:59 inclusive (midnight exclusive).",
+          "boundary_source": "https://nickstory.fandom.com/wiki/July_5%2C_1995"
         }
       ],
       "warnings": [
         "Secondary community listing, not a verified as-aired log. Episode annotations remain unverified source claims.",
         "05:30–07:00 has blank source entries and remains unknown.",
-        "23:30 entry omitted because the source provides no following end boundary.",
-        "No commercials, bumpers, local station identity or Rochester cable positions are established by this source."
+        "No commercials, bumpers, local station identity or Rochester cable positions are established by this source.",
+        "Late-slot end checked against the July 5 listing; inferred 23:59 inclusive."
       ]
     }
   ]

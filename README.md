@@ -7,7 +7,10 @@ scheduler have **no dependency on the companion analyzer or an upscaler**.
 This is a working first slice, not a finished historical-reconstruction product.
 [Time Machine and Channel Surfing](docs/USING_TIME_MACHINE.md) now share the same
 catalog, composer and player. Choose WHAT through saved themes/shows/collections;
-once tuned, its clock, program order and break timing remain fixed. Source-specific
+once tuned, its clock, program order and break timing remain fixed.
+The [viewer manager and reception setups](docs/BROADCAST_SETUP.md) separate couch
+controls from server-only content tools. [Complete recordings](docs/COMPLETE_BLOCKS.md)
+can play intact from a local file or an opt-in remote source at a fixed anchor. Source-specific
 period research supports daily-page adapters and reviewed JSON sideloads; automatic
 video identification remains future work. See [period research](docs/PERIOD_RESEARCH.md).
 The current composer supports date windows, service matching, optional local
@@ -160,12 +163,12 @@ automatic historical-data retrieval is not yet implemented.
 The TV guide uses a fixed SD 640×480 / 4:3 layout inspired by early digital cable
 firmware. It has full-PIP and bottom-third modes, remote-key navigation and
 text-labeled colors for ready, partial, missing, offline, substituted and unknown
-slots. `/manager` assesses a channel or theme for one to three days, reports media
+slots. `/broadcasts` assesses a channel or theme for one to three days, reports media
 and historical-evidence gaps, and lets you locate media or record substitutions.
 See [guide, manager and visual references](docs/GUIDE_AND_MANAGER.md).
 
 Open `/time-machine` (or press T in the guide) for specific-date or representative
-weekday/Saturday destinations, preflight and persistent resume. `/manager` offers
+weekday/Saturday destinations, preflight and persistent resume. `/broadcasts` offers
 mode-based lineup health, adjustable standards and evidence-backed acquisition
 recommendations. Search links help the human TV Master find DVDs and era recordings;
 unresearched periods are never turned into invented missing-episode lists.
@@ -175,8 +178,14 @@ Preview: [full guide](docs/screenshots/guide-full.png),
 [station manager](docs/screenshots/manager.png). Screenshots use generated test
 patterns and a fictional lineup; they contain no actual broadcast footage.
 
-Research desk: open `/research` to collect dated listings, use saved HTML, or
+Research desk (server console only): open `/research` to collect dated listings, use saved HTML, or
 sideload researched JSON. Review the source before accepting it. The included
 [real July 4, 1995 example](examples/research/nickelodeon-1995-07-04.json) establishes
 program-level evidence with unknown hours retained; see the
 [workflow and local screenshot capture](docs/PERIOD_RESEARCH.md).
+
+The normal frontend starts in the PIP guide; **TV MASTER MANAGER** opens Time
+Machine, Channel Surf, Block Party and Manage Broadcasts. Region/provider/tier
+setups drive channel membership. Live meters read the real library; **Test UI**
+is a separate, explicitly simulated preview. Content tools require CLI or an
+explicit loopback-only `serve --admin` maintenance process.

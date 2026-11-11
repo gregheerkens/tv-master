@@ -1,3 +1,4 @@
+// This maintenance/legacy check requires an explicit loopback serve --admin instance.
 // Run against a synthetic demo: RETRO_TV_URL=http://127.0.0.1:8787 node tests/browser-smoke.cjs
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
@@ -24,7 +25,7 @@ const assert=require('node:assert/strict');
     await page.keyboard.press('g');assert.equal(await page.locator('body').getAttribute('class'),'mode-watch');
     await page.keyboard.press('2');await page.keyboard.press('Enter');
     await page.waitForFunction(()=>document.getElementById('playing-channel').textContent.startsWith('2 '));
-    await page.goto(root+'/manager');await page.waitForSelector('.channel-card');
+    await page.goto(root+'/server-manager');await page.waitForSelector('.channel-card');
     await page.selectOption('#plan-mode','historical');await page.selectOption('#plan-days','3');
     await page.locator('#assess-button').click();await page.waitForSelector('#assessment:not([hidden])');
     assert.equal(await page.locator('.day-card').count(),3);

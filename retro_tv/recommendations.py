@@ -46,7 +46,7 @@ def score(report,standard):
     if report.get('unique_commercial_ms',0)/60000<s['ad_minutes_per_day']*report['days']:issues.append('Period commercial variety is below your target')
     if standard['mode']=='historical':
         if history is None or history<s['min_history_percent']:issues.append('Historical listings coverage is below your research target')
-        if (report.get('exact_schedule_percent') or 0)<s['min_exact_percent']:issues.append('Exact-episode evidence is below your target')
+        if (report.get('identified_episode_percent',report.get('exact_schedule_percent')) or 0)<s['min_exact_percent']:issues.append('Identified episodes are below your target')
         if report['substituted_blocks'] and not s['allow_substitutions']:issues.append('Explicit substitutions do not meet this recreation standard')
     status='ready' if not issues else 'needs_work'
     if standard['mode']=='historical' and research in ('unresearched','partial'):
@@ -56,7 +56,7 @@ def score(report,standard):
 
 
 def search_links(query,*,dvd=False):
-    if dvd:return [{'label':'Search eBay DVDs','url':'https://www.ebay.com/sch/i.html?'+urlencode({'_nkw':query+' DVD'})}]
+    if dvd:return [{'label':'Search eBay DVDs','url':'https://www.ebay.com/sch/i.html?'+urlencode({'_nkw':query+' DVD'})},{'label':'Find on Internet Archive','url':'https://archive.org/search?'+urlencode({'query':query+' mediatype:movies'})}]
     return [{'label':'Search Internet Archive','url':'https://archive.org/search?'+urlencode({'query':query})},
             {'label':'Search YouTube','url':'https://www.youtube.com/results?'+urlencode({'search_query':query})}]
 
@@ -96,7 +96,7 @@ def enrich(db,report,standard):
         if gap.get('program_missing') and gap.get('expected_content_id'):
             evidence=history.get(gap['airing_id'],{}).get('evidence_state')
             content=db.execute('SELECT kind FROM content WHERE id=?',(gap['expected_content_id'],)).fetchone()
-            if evidence=='exact' or (evidence=='schedule_exact' and content and content['kind']!='episode'):
+            if evidence=='exact' or (evidence=='schedule_exact' and content and (content['kind']!='episode' or json.loads(history[gap['airing_id']]['provenance']).get('source_episode_text'))):
                 known_missing.setdefault(gap['expected_content_id'],[]).append(gap['airing_id'])
     groups={}
     for cid,airings in known_missing.items():
@@ -117,24 +117,26 @@ def enrich(db,report,standard):
                 'title':('Review selection / eligibility: ' if available else 'Locate your cataloged recording: ')+content['title'],
                 'detail':'A matching recipe is already cataloged. Check its files, exclusions, date windows and slot fit before acquiring another copy.',
                 'content_ids':[cid],'airing_ids':sorted(set(airings)),'evidence':'catalog_and_imported_airings',
-                'actions':[{'label':'Inspect library','url':'/manager#library'}]})
+                'actions':[{'label':'Inspect library','url':'/broadcasts'}]})
             continue
         parent=db.execute('SELECT * FROM content WHERE id=?',(content['parent_id'],)).fetchone() if content['parent_id'] else None
         title=parent['title'] if parent else content['title']
         season=content['season_number']
-        key=(title,season);group=groups.setdefault(key,{'episodes':[],'content_ids':[],'airing_ids':[],'unspecified':False})
+        key=(title,season);group=groups.setdefault(key,{'episodes':[],'episode_titles':[],'content_ids':[],'airing_ids':[],'unspecified':False})
         group['content_ids'].append(cid);group['airing_ids']+=airings
+        if content['episode_title']:group['episode_titles'].append(content['episode_title'])
         if content['episode_number'] is not None:group['episodes'].append(content['episode_number'])
         else:group['unspecified']=True
     for (title,season),group in groups.items():
         season_label=f' — Season {season}' if season is not None else ''
         episodes_label=f', Episodes {ranges(group["episodes"])}' if group['episodes'] else ''
         label=title+season_label+episodes_label
+        if season is None and group['episode_titles']:label+=' — '+('; '.join(group['episode_titles']) if len(group['episode_titles'])<=2 else str(len(group['episode_titles']))+' named episodes')
         query=title+(f' season {season}' if season is not None else '')
         recommendations.append({'kind':'known_program_gap','title':label,
             'detail':'These identified items are required by imported airings and have no matched program in the assessed plan. Other unresearched episodes are not implied missing.',
-            'content_ids':group['content_ids'],'airing_ids':sorted(set(group['airing_ids'])),
-            'evidence':'imported_airings','actions':search_links(query,dvd=True)})
+            'episode_titles':group['episode_titles'],'content_ids':group['content_ids'],'airing_ids':sorted(set(group['airing_ids'])),
+            'evidence':'imported_airings','actions':search_links(query,dvd=True)+[{'label':'Archive: '+name,'url':'https://archive.org/search?'+urlencode({'query':title+' '+name+' mediatype:movies'})} for name in group['episode_titles'][:3]]})
     target=standard['settings']['ad_minutes_per_day']*report['days']
     minutes=report['unique_commercial_ms']/60000
     if minutes<target:

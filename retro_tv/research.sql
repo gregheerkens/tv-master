@@ -15,3 +15,11 @@ CREATE TABLE IF NOT EXISTS research_acceptance (
  page_id TEXT NOT NULL REFERENCES research_page(id), candidate_index INTEGER NOT NULL, airing_id TEXT NOT NULL REFERENCES historical_airing(id),
  PRIMARY KEY(page_id,airing_id)
 );
+CREATE TABLE IF NOT EXISTS content_alias (
+ content_id TEXT NOT NULL REFERENCES content(id), title TEXT NOT NULL,
+ episode_title TEXT NOT NULL DEFAULT '', PRIMARY KEY(content_id,title,episode_title)
+);
+CREATE TABLE IF NOT EXISTS research_boundary (
+ page_id TEXT PRIMARY KEY REFERENCES research_page(id), tail TEXT NOT NULL,
+ next_url TEXT, status TEXT NOT NULL, error TEXT, snapshot TEXT
+);

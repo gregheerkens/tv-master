@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 from .catalog import fingerprint, import_library
 from .records import Policy, utc_now
+from . import broadcasts
 from .health import resolve_path, timeline_health
 
 
@@ -25,9 +26,16 @@ def import_plan(db,document):
             a,b=timestamp(row['start']),timestamp(row['end'])
             if not 0<b-a<=12*3600000:raise ValueError('airing must last between 0 and 12 hours')
             if not row.get('provenance'):raise ValueError('listings require source provenance')
+            provenance=row['provenance'];content_id=row.get('content_id')
+            episode=row.get('episode_title') or (provenance.get('source_episode_text') if isinstance(provenance,dict) else None)
+            if episode:
+                from .identities import resolve
+                current=db.execute('SELECT kind FROM content WHERE id=?',(content_id,)).fetchone()
+                if not current or current['kind']!='episode':content_id=resolve(db,row['title'],episode)
+                provenance={**(provenance if isinstance(provenance,dict) else {'source':provenance}),'source_episode_text':episode,'needs_check':True}
             db.execute('INSERT INTO historical_airing VALUES (?,?,?,?,?,?,?,?)',
-                (row['id'],row['service_id'],row.get('content_id'),row['title'],a,b,
-                 row['evidence_state'],json.dumps(row['provenance'])))
+                (row['id'],row['service_id'],content_id,row['title'],a,b,
+                 row['evidence_state'],json.dumps(provenance)))
             for requirement in row.get('requirements',[]):
                 duration=requirement['duration_ms']
                 if type(duration) is not int or not 0<duration<=b-a:
@@ -60,14 +68,14 @@ def dashboard(db,now,standard_id='channel',requested_date=None,days=3):
     from .recommendations import get_standard,standards,score
     standard=get_standard(db,standard_id)
     if type(days) is not int or not 1<=days<=3:raise ValueError('assess 1, 2 or 3 days')
-    zone=ZoneInfo(db.execute('SELECT timezone FROM state').fetchone()[0])
+    zone=ZoneInfo(broadcasts.timezone(db))
     day=requested_date if requested_date and standard['mode']!='channel' else datetime.fromtimestamp(now/1000,zone).date().isoformat()
     date.fromisoformat(day)
     channels=[]
-    services=db.execute('SELECT * FROM service ORDER BY name').fetchall() if standard['mode']=='theme' else db.execute('''SELECT DISTINCT s.* FROM service s
-      JOIN lineup_entry e ON e.service_id=s.id JOIN lineup l ON l.id=e.lineup_id
-      WHERE l.valid_from<=? AND l.valid_until>? ORDER BY s.name''',(day,day)).fetchall()
+    services=db.execute('SELECT * FROM service ORDER BY name').fetchall() if standard['mode']=='theme' else broadcasts.channels(db,day)
+    allowed=broadcasts.service_ids(db)
     for service in services:
+        if service['id'] not in allowed:continue
         health=timeline_health(db,service['id'],now,now+72*3600000)
         totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','slate_ms','missing_file_ms','program_ms','commercial_ms','continuity_ms','quality_alerts')}
         row={**dict(service),**totals,'blocks':len(health),
@@ -87,7 +95,7 @@ def dashboard(db,now,standard_id='channel',requested_date=None,days=3):
         row['assessed_gap_blocks']=row['gap_blocks'] if standard['mode']=='channel' else len(result['gaps'])
         channels.append(row)
     healthy=sum(c['assessment_health']['status']=='ready' for c in channels)
-    return {'now_ms':now,'timezone':db.execute('SELECT timezone FROM state').fetchone()[0],
+    return {'now_ms':now,'timezone':broadcasts.timezone(db),
         'channels':channels,'inventory':inventory(db),
         'health_standard':standard,'health_standards':standards(db),
         'assessment_date':day,'assessment_days':days,
@@ -118,7 +126,7 @@ def assess(db,request):
     if type(days) is not int or not 1<=days<=3:raise ValueError('assess 1, 2 or 3 days')
     start_date=date.fromisoformat(request['date'])
     state=db.execute('SELECT * FROM state WHERE id=1').fetchone()
-    zone=ZoneInfo(state['timezone'])
+    zone=ZoneInfo(broadcasts.timezone(db))
     start=int(datetime.combine(start_date,datetime.min.time(),zone).timestamp()*1000)
     end=int(datetime.combine(start_date+timedelta(days=days),datetime.min.time(),zone).timestamp()*1000)
     scratch=sqlite3.connect(':memory:');scratch.row_factory=sqlite3.Row
@@ -155,17 +163,18 @@ def assess(db,request):
             compose(scratch,service,cursor,state)
             cursor=scratch.execute('SELECT max(end_ms) FROM broadcast WHERE service_id=?',(service,)).fetchone()[0]
         health=timeline_health(scratch,service,start,end)
-        totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','program_ms','commercial_ms','continuity_ms','slate_ms','missing_file_ms')}
+        totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','program_ms','block_ms','commercial_ms','continuity_ms','slate_ms','missing_file_ms')}
         history=[] if mode=='theme' else db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms<? AND end_ms>? ORDER BY start_ms',(service,end,start)).fetchall()
         known=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history if r['evidence_state'] in ('exact','schedule_exact'))
         exact=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history if r['evidence_state']=='exact')
+        identified=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history if r['content_id'] and db.execute("SELECT 1 FROM content WHERE id=? AND kind='episode'",(r['content_id'],)).fetchone())
         gaps=[]
         for row in scratch.execute('SELECT * FROM broadcast WHERE service_id=? AND start_ms<? ORDER BY start_ms',(service,end)):
             status=health.get(row['id'],{})
             if status.get('status') in ('missing','partial','offline','unknown'):
                 gaps.append({'id':row['id'],'title':row['title'],'start_ms':row['start_ms'],
                     'end_ms':min(row['end_ms'],end),'status':status['status'],'reasons':status['reasons'],
-                    'program_missing':row['program_id'] is None,
+                    'program_missing':row['program_id'] is None and row['evidence']!='recorded_block',
                     'expected_content_id':next((r['content_id'] for r in history if r['start_ms']<=row['start_ms']<r['end_ms']),None),
                     'airing_id':next((r['id'] for r in history if r['start_ms']<=row['start_ms']<r['end_ms']),None)})
         requirements=[]
@@ -197,6 +206,7 @@ def assess(db,request):
             'simulation_only':True,**totals,'playable_percent':round(totals['playable_ms']/span*100,1),
             'known_schedule_percent':round(known/span*100,1) if mode!='theme' else None,
             'exact_schedule_percent':round(exact/span*100,1) if mode!='theme' else None,
+            'identified_episode_percent':round(identified/span*100,1) if mode!='theme' else None,
             'unique_programs':len(unique),'unique_program_ms':sum(unique.values()),
             'repeat_passes_needed':math.ceil(totals['program_ms']/sum(unique.values())) if unique else 0,
             'historically_complete':mode=='historical' and exact==span and not gaps and not substituted and all(r['status']=='ready' for r in requirements),
