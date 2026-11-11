@@ -5,6 +5,10 @@ promos and bumpers become continuous, reproducible broadcasts. The player and
 scheduler have **no dependency on the companion analyzer or an upscaler**.
 
 This is a working first slice, not a finished historical-reconstruction product.
+The end-goal [Time Machine and Channel Surfing modes](docs/PRODUCT_MODES.md) are
+documented separately from the current implementation. Channel Surfing already
+uses fixed timelines with on-demand media playback; the named Time Machine
+destination/session workflow is planned.
 The current composer supports date windows, service matching, optional local
 dayparts, ordered acts, whole commercial spots and explicit missing-material
 slates. The original design and handoff are retained in `docs/`.

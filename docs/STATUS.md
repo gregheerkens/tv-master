@@ -38,6 +38,12 @@
 
 ## Known gaps and next steps
 
+The user's end-goal clarification is captured in `PRODUCT_MODES.md` and ADR 0005:
+named **Time Machine** (specific historical destinations or representative period
+blocks) and **Channel Surfing** (fixed timeline, lazy media playback). The current
+manager provides preflight foundations, but a distinct Time Machine playback
+session and external historical evidence adapters are not implemented yet.
+
 The guide/manager update adds a fixed 640×480 / 4:3 TV surface with flat early-
 firmware styling (revised following the user's visual feedback), contextual colors,
 full-PIP / bottom-third / TV-only modes and remote-event navigation. The manager

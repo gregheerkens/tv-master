@@ -2,6 +2,13 @@
 
 ## Latest authorized scope
 
+Read `docs/PRODUCT_MODES.md` and ADR 0005 for the latest product direction:
+**Time Machine** selects an independent historical reconstruction context;
+**Channel Surfing** joins a fixed timeline that advances without background video
+decoding. Time Machine sessions are planned, not implemented. The no-reset/no-
+reroll rule below protects Channel Surfing and published entries; it must not be
+interpreted as prohibiting the separately requested Time Machine destination flow.
+
 Read `docs/adr/ADR-0001-standalone-block-station.md` alongside the original canon.
 The user explicitly prioritizes a standalone prepared-library station, optional
 analysis/restoration, and an immutable rolling 72-hour guide. These newer user
