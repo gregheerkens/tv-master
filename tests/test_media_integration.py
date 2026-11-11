@@ -10,6 +10,7 @@ from pathlib import Path
 from retro_tv.catalog import connect, import_library, probe
 from retro_tv.companion import analyze, export_review, extract
 from retro_tv.scheduler import initialize
+from retro_tv.ingest import ingest_path
 
 
 @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg not installed')
@@ -26,7 +27,7 @@ class MediaIntegration(unittest.TestCase):
                 '-map','[v]','-map','3:a','-t','4.5','-c:v','libx264','-c:a','aac',
                 '-pix_fmt','yuv420p',str(source)],check=True,capture_output=True)
             original=source.read_bytes()
-            document=analyze(source)
+            document=analyze(source,{'kind':'recorded','recorded_date':'1995','seasonal':False})
             self.assertEqual(len(document['candidates']),2)
             self.assertAlmostEqual(document['candidates'][0]['out_ms'],2250,delta=50)
             with self.assertRaises(ValueError):export_review(document)
@@ -39,7 +40,12 @@ class MediaIntegration(unittest.TestCase):
             db=connect(directory/'catalog.sqlite')
             config=json.loads((Path(__file__).resolve().parents[1]/'examples/station.json').read_text())
             initialize(db,config)
+            context={'kind':'recorded','recorded_date':'1995','seasonal':False}
+            with self.assertRaises(ValueError):ingest_path(db,source,{'kind':'ripped'})
+            with self.assertRaises(ValueError):ingest_path(db,directory,context)
+            ingest_path(db,source,context)
             import_library(db,manifest,directory)
+            self.assertEqual(db.execute('SELECT count(*) FROM source').fetchone()[0],1)
             self.assertEqual(db.execute('SELECT count(*) FROM asset').fetchone()[0],2)
             self.assertEqual(extract(document,directory/'cuts'),2)
             for path in (directory/'cuts').glob('*.mp4'):

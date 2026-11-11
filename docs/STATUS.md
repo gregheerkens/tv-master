@@ -19,7 +19,7 @@
 
 ## Validation performed
 
-- 24 Python tests passed, including a real FFmpeg detection → review → export →
+- 31 Python tests passed, including a real FFmpeg detection → review → export →
   catalog import → physical extraction round trip. The archival fixture remained
   byte-for-byte unchanged.
 - Concurrent writers produced one contiguous, nonoverlapping schedule.
@@ -35,6 +35,14 @@
 - Python compile checks and JavaScript syntax checks passed.
 
 ## Known gaps and next steps
+
+Schema v3 adds source-ingestion context, ripped-folder/recorded-file intake,
+mandatory recording date/seasonal/holiday fields for new recorded media, and
+estimated ±2-year continuity reuse with movable-holiday and evidence overrides.
+Existing sources remain `legacy_unknown` without changing published programming.
+Tests include leap dates, seasonal context rejection, Thanksgiving/Easter and
+New Year boundaries, annual campaigns, scheduler enforcement and ingest→companion
+source reuse. These are CLI/JSON workflows; an ingest form remains future work.
 
 The v2 recordkeeping update adds normalized content identities, dated station and
 primary-network lookup, themed-channel tag matching, seasonal eligibility windows,

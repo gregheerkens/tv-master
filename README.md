@@ -48,7 +48,9 @@ first serving or running `guide`, as either publishes the initial horizon.
 bumper. Replace its paths, identities, periods and provenance with your media.
 Whole files need no in/out points; spans into longer captures can use integer
 `in_ms`/`out_ms`. Import reads and hashes source files but never modifies them.
-Source and catalog IDs are append-only: duplicate IDs reject the entire import.
+Catalog IDs are append-only. Identical registered sources can be referenced again;
+conflicting source IDs reject the import. New sources require an `ingest` context;
+see [ingestion requirements and defaults](docs/INGESTION.md).
 
 Use browser-compatible **H.264 video / AAC audio in MP4**, preferably with
 faststart. Arbitrary containers/codecs do not become browser-compatible merely
@@ -82,7 +84,7 @@ exploration is deliberately narrowed for this station's live viewing mode; see A
 ## Optional companion
 
 ```sh
-python -m retro_tv.companion analyze /media/tape.mp4 review.json
+python -m retro_tv.companion analyze /media/tape.mp4 review.json --recorded-date 1995 --not-seasonal
 # Review boundaries and supply identities, dates, service IDs and evidence.
 python -m retro_tv.companion export review.json approved-library.json
 python -m retro_tv --db data/my-station.sqlite import-library approved-library.json
@@ -93,7 +95,7 @@ It can also run independently as a serial analysis-job HTTP service:
 ```sh
 python -m retro_tv.companion serve --media-root /media --port 8790
 curl -X POST http://127.0.0.1:8790/jobs \
-  -H 'Content-Type: application/json' -d '{"path":"tape.mp4"}'
+  -H 'Content-Type: application/json' -d '{"path":"tape.mp4","ingest":{"kind":"recorded","recorded_date":"1995","seasonal":false}}'
 curl http://127.0.0.1:8790/jobs/JOB_ID
 ```
 

@@ -54,7 +54,9 @@ with similar openings before claiming reliable automatic segmentation.
 
 ## Service boundary
 
-`POST /jobs` accepts `{ "path": "relative/path.mp4" }` under `--media-root`.
+`POST /jobs` accepts `path` under `--media-root` plus mandatory recorded-media
+`ingest` context (recording date, seasonal answer, and holiday/year if seasonal).
+See `INGESTION.md` for examples and inherited continuity reuse defaults.
 `GET /jobs/<id>` returns queued/running/awaiting_review/failed/interrupted state.
 One worker serializes heavy analysis; results persist in `--jobs`. Work interrupted
 by restart must be resubmitted. Save the GET response as JSON and use `export`;

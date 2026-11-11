@@ -26,7 +26,7 @@ def create(db, directory):
                             f'color=c={color}:s=640x480:r=24','-f','lavfi','-i','anullsrc=r=48000:cl=stereo',
                             '-t',str(duration),'-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',
                             '-movflags','+faststart',str(path)],check=True)
-        sources.append({'id':ident,'path':str(path),'provenance':{'origin':'generated FFmpeg color/silence fixture'}})
+        sources.append({'id':ident,'path':str(path),'ingest':{'kind':'generated'},'provenance':{'origin':'generated FFmpeg color/silence fixture'}})
         assets.append({'id':ident,'source_id':ident,'title':f'Synthetic {ident}','kind':kind,
                        'valid_from':'1990-01-01','valid_until':'2100-01-01','services':[],
                        'metadata':{'review_status':'approved','evidence':'synthetic fixture'}})

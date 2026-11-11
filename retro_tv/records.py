@@ -165,10 +165,14 @@ class Policy:
         self.affiliations=[dict(r) for r in db.execute('SELECT * FROM affiliation_history')]
         self.markets=[dict(r) for r in db.execute('SELECT e.service_id,p.market_id,l.valid_from,l.valid_until FROM lineup_entry e JOIN lineup l ON l.id=e.lineup_id JOIN provider p ON p.id=l.provider_id')]
         self.profiles={r['service_id']:dict(r) for r in db.execute('SELECT * FROM channel_profile')}
+        self.reuse={r['id']:json.loads(r['metadata']).get('reuse_rule') for r in db.execute('SELECT id,metadata FROM asset')}
 
     def allowed(self,identifier,service,day,*,program=False):
         if not program and identifier in self.recordings:
             return False
+        if not program and self.reuse.get(identifier):
+            from .ingest import reuse_allowed
+            if not reuse_allowed(self.reuse[identifier],day):return False
         content=(self.program_ids if program else self.asset_ids).get(identifier)
         visited=set()
         while content:

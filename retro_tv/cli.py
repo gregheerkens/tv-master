@@ -6,6 +6,7 @@ from pathlib import Path
 from .catalog import connect, import_library
 from .scheduler import initialize, extend, guide
 from . import records
+from .ingest import ingest_path, add_recording_arguments, arguments_context
 
 
 def main():
@@ -16,6 +17,11 @@ def main():
     init.add_argument('config', type=Path)
     imp = sub.add_parser('import-library', help='Append reviewed sources, spans and ordered programs')
     imp.add_argument('manifest', type=Path)
+    rips=sub.add_parser('ingest-rips',help='Register a ripped-media folder without running the analyzer')
+    rips.add_argument('folder',type=Path)
+    recording=sub.add_parser('ingest-recording',help='Register one recording with mandatory date/season context')
+    recording.add_argument('file',type=Path)
+    add_recording_arguments(recording)
     metadata = sub.add_parser('import-records', help='Import identities, channel history and eligibility windows')
     metadata.add_argument('manifest', type=Path)
     lookup = sub.add_parser('channels', help='Look up imported dated station/affiliation/lineup facts')
@@ -59,6 +65,11 @@ def main():
             elif args.command == 'import-library':
                 import_library(db, json.loads(args.manifest.read_text()), args.manifest.parent)
                 print('Library imported; published programming is unchanged.')
+            elif args.command in ('ingest-rips','ingest-recording'):
+                context={'kind':'ripped'} if args.command=='ingest-rips' else arguments_context(args)
+                path=args.folder if args.command=='ingest-rips' else args.file
+                print(json.dumps({'source_ids':ingest_path(db,path,context),
+                    'status':'Registered; content identification/approval still required'},indent=2))
             elif args.command == 'import-records':
                 records.import_records(db,json.loads(args.manifest.read_text()))
                 print('Catalog records imported. Published programming is unchanged.')

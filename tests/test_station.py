@@ -177,7 +177,7 @@ class CompanionTest(unittest.TestCase):
         with self.assertRaises(ValueError):export_review({'source':{},'candidates':[]})
 
     def test_review_exports_same_import_contract_and_requires_provenance(self):
-        draft={'source':{'id':'tape','path':'tape.mp4','duration_ms':1000},'candidates':[
+        draft={'source':{'id':'tape','path':'tape.mp4','duration_ms':1000,'ingest':{'kind':'recorded','recorded_date':'1995','seasonal':False}},'candidates':[
             {'id':'a','in_ms':0,'out_ms':1000,'title':'Reviewed bumper','kind':'bumper',
              'summary':'Manually identified network bumper','valid_from':'1995-01-01',
              'valid_until':'1996-01-01','services':['kids'],'review_status':'approved',

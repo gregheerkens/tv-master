@@ -13,11 +13,16 @@ def connect(path):
     db.row_factory = sqlite3.Row
     db.executescript(Path(__file__).with_name('schema.sql').read_text())
     db.executescript(Path(__file__).with_name('records.sql').read_text())
+    db.executescript(Path(__file__).with_name('ingest.sql').read_text())
     if db.execute('PRAGMA user_version').fetchone()[0] < 2:
         from .records import backfill
         with db:
             backfill(db)
             db.execute('PRAGMA user_version=2')
+    if db.execute('PRAGMA user_version').fetchone()[0] < 3:
+        with db:
+            db.execute("INSERT OR IGNORE INTO source_ingest SELECT id,'legacy_unknown','{\"kind\":\"legacy_unknown\"}' FROM source")
+            db.execute('PRAGMA user_version=3')
     return db
 
 
@@ -73,7 +78,7 @@ def metadata(item):
 
 
 def import_library(db, document, base, *, verify_media=True):
-    """Append catalog IDs. Duplicate IDs fail; sources are never overwritten or split.
+    """Append catalog IDs; identical registered sources may be referenced again.
 
     verify_media=False is solely for synthetic tests and the metadata-only example.
     """
@@ -83,15 +88,25 @@ def import_library(db, document, base, *, verify_media=True):
     with db:
         known = {r[0] for r in db.execute('SELECT id FROM service')}
         for source in document.get('sources', []):
+            from .ingest import validate_context
+            context=validate_context(source.get('ingest',{'kind':'generated'} if not verify_media else None))
             path = (base / source['path']).resolve()
             duration = probe(path) if verify_media else source['duration_ms']
             integer(duration, 'duration_ms', 1)
             digest = fingerprint(path) if verify_media else source.get('sha256', 'synthetic')
             if verify_media and 'sha256' in source and source['sha256'] != digest:
                 raise ValueError(f'source hash mismatch: {source["id"]}')
-            db.execute('INSERT INTO source VALUES (?,?,?,?,?)',
-                       (source['id'], str(path), duration, digest,
-                        json.dumps(source['provenance'])))
+            existing=db.execute('SELECT path,duration_ms,sha256 FROM source WHERE id=?',(source['id'],)).fetchone()
+            if existing:
+                saved=json.loads(db.execute('SELECT context FROM source_ingest WHERE source_id=?',(source['id'],)).fetchone()[0])
+                keys=('kind','recorded_date','seasonal','holiday','holiday_year')
+                if tuple(existing)!=(str(path),duration,digest) or any(saved.get(k)!=context.get(k) for k in keys):
+                    raise ValueError('source ID already belongs to different media or recording context')
+            else:
+                db.execute('INSERT INTO source VALUES (?,?,?,?,?)',
+                           (source['id'], str(path), duration, digest,
+                            json.dumps(source['provenance'])))
+                db.execute('INSERT INTO source_ingest VALUES (?,?,?)',(source['id'],context['kind'],json.dumps(context)))
         for asset in document.get('assets', []):
             start, end = window(asset)
             a = integer(asset.get('in_ms', 0), 'in_ms')
@@ -103,6 +118,11 @@ def import_library(db, document, base, *, verify_media=True):
             if not a < b <= row[0]:
                 raise ValueError('span must satisfy 0 <= in_ms < out_ms <= source duration')
             details = metadata(asset)
+            from .ingest import reuse_rule
+            context=json.loads(db.execute('SELECT context FROM source_ingest WHERE source_id=?',(asset['source_id'],)).fetchone()[0])
+            inferred=reuse_rule(context,asset['kind'],details.get('reuse_constraints'))
+            if inferred:
+                details['reuse_rule']=inferred
             if details.get('review_status') != 'approved':
                 raise ValueError('only reviewed/approved assets enter the playout catalog')
             db.execute('INSERT INTO asset VALUES (?,?,?,?,?,?,?,?,?,?)',

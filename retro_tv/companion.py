@@ -13,6 +13,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from .ingest import validate_context, reuse_rule, add_recording_arguments, arguments_context
 
 
 def probe(path):
@@ -35,7 +36,9 @@ def boundaries(log, duration_ms):
     return values
 
 
-def analyze(path):
+def analyze(path,context=None):
+    context=validate_context(context)
+    if context['kind']!='recorded':raise ValueError('recording analysis requires recorded-media context')
     path = Path(path).resolve(strict=True)
     duration = probe(path)
     result = subprocess.run(['ffmpeg', '-nostdin', '-hide_banner', '-i', str(path),
@@ -45,8 +48,8 @@ def analyze(path):
     cuts = boundaries(result.stderr, duration)
     with path.open('rb') as stream:
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-    return {'version':1, 'source':{'id':digest[:20], 'path':str(path),
-            'duration_ms':duration, 'sha256':digest,
+    return {'version':1, 'source':{'id':digest[:24], 'path':str(path),
+            'duration_ms':duration, 'sha256':digest, 'ingest':context,
             'provenance':{'origin':'user-supplied recording','analyzer':'ffmpeg black/silence baseline'}},
             'candidates':[{'id':f'{digest[:12]}-{i:04d}', 'in_ms':a['at_ms'], 'out_ms':b['at_ms'],
                            'boundary_evidence':a['evidence'], 'boundary_confidence':a['confidence'],
@@ -68,6 +71,12 @@ def export_review(document):
         previous=b
         if candidate['review_status'] != 'approved':
             continue
+        context=validate_context(source.get('ingest'))
+        candidate=dict(candidate)
+        rule=reuse_rule(context,candidate.get('kind'),candidate.get('reuse_constraints'))
+        if rule:
+            candidate['valid_from']=candidate.get('valid_from') or rule['valid_from']
+            candidate['valid_until']=candidate.get('valid_until') or rule['valid_until']
         if any(not candidate.get(k) for k in ('title','kind','summary','valid_from','valid_until','identification_evidence')):
             raise ValueError('approved candidates require title, kind, summary, dates and identification evidence')
         assets.append({'id':candidate['id'], 'source_id':source['id'],
@@ -106,10 +115,10 @@ def serve(root, jobs, host, port):
             temporary.write_text(json.dumps(value,indent=2))
             temporary.replace(jobs/f'{ident}.json')
 
-    def run(ident,path):
+    def run(ident,path,context):
         write_job(ident,{'status':'running'})
         try:
-            result=analyze(path)
+            result=analyze(path,context)
             write_job(ident,{'status':'awaiting_review','review':result})
         except Exception as error:
             write_job(ident,{'status':'failed','error':str(error)})
@@ -131,12 +140,14 @@ def serve(root, jobs, host, port):
                 if not 0<length<=8192:
                     raise ValueError('expected a small JSON job request')
                 value=json.loads(self.rfile.read(length))
+                context=validate_context(value.get('ingest'))
+                if context['kind']!='recorded':raise ValueError('analysis jobs require recorded-media context')
                 path=(root/value['path']).resolve(strict=True)
                 if not path.is_relative_to(root) or not path.is_file():
                     raise ValueError('source must be a file under media-root')
                 ident=uuid.uuid4().hex
                 write_job(ident,{'status':'queued'})
-                pool.submit(run,ident,path)
+                pool.submit(run,ident,path,context)
                 self.reply({'id':ident,'status':'queued'},202)
             except (ValueError,OSError,KeyError) as error:
                 self.reply({'error':str(error)},400)
@@ -165,6 +176,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
     scan=sub.add_parser('analyze');scan.add_argument('source',type=Path);scan.add_argument('output',type=Path)
+    add_recording_arguments(scan)
     export=sub.add_parser('export');export.add_argument('review',type=Path);export.add_argument('output',type=Path)
     cut=sub.add_parser('extract');cut.add_argument('review',type=Path);cut.add_argument('directory',type=Path)
     service=sub.add_parser('serve');service.add_argument('--media-root',required=True,type=Path)
@@ -173,7 +185,7 @@ def main():
     args=parser.parse_args()
     try:
         if args.command=='analyze':
-            args.output.write_text(json.dumps(analyze(args.source),indent=2))
+            args.output.write_text(json.dumps(analyze(args.source,arguments_context(args)),indent=2))
         elif args.command=='export':
             review=json.loads(args.review.read_text())
             # Service GET responses wrap the same independent review document.
