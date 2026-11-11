@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sources": [
+    {"id":"episode-act-1-source","path":"media/episode-act-1.mp4","provenance":{"origin":"Your owned program master, manually divided","note":"Replace this illustrative entry"}},
+    {"id":"episode-act-2-source","path":"media/episode-act-2.mp4","provenance":{"origin":"Your owned program master, manually divided"}},
+    {"id":"ad-source","path":"media/commercial.mp4","provenance":{"origin":"Your period commercial collection"}},
+    {"id":"bumper-source","path":"media/bumper.mp4","provenance":{"origin":"Your network continuity collection"}}
+  ],
+  "assets": [
+    {"id":"act-1","source_id":"episode-act-1-source","title":"Example episode, act 1","kind":"program","valid_from":"1995-01-01","valid_until":"1996-01-01","services":["kids"],"metadata":{"review_status":"approved","evidence":"User-defined illustrative period; verify before real use"}},
+    {"id":"act-2","source_id":"episode-act-2-source","title":"Example episode, act 2","kind":"program","valid_from":"1995-01-01","valid_until":"1996-01-01","services":["kids"],"metadata":{"review_status":"approved"}},
+    {"id":"ad","source_id":"ad-source","title":"Example period commercial","kind":"commercial","valid_from":"1995-01-01","valid_until":"1996-01-01","services":[],"metadata":{"review_status":"approved","summary":"Replace with the actual advertiser and creative description","original_air_date":null,"date_evidence":"User-estimated bracket, not a verified broadcast date"}},
+    {"id":"bumper","source_id":"bumper-source","title":"Example network bumper","kind":"bumper","valid_from":"1995-01-01","valid_until":"1996-01-01","services":["kids"],"metadata":{"review_status":"approved"}}
+  ],
+  "programs": [
+    {"id":"episode-1","title":"Your show — episode 1","parts":["act-1","act-2"],"services":["kids"],"valid_from":"1995-01-01","valid_until":"1996-01-01","metadata":{"dayparts":[{"start":"16:00","end":"18:00","weekdays":[0,1,2,3,4]}],"evidence":"User-composed block; no historical schedule claim"}}
+  ]
+}

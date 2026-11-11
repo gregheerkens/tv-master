@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retro-tv-local"
+version = "0.1.0"
+description = "Local period television blocks with an immutable rolling guide"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+retro-tv = "retro_tv.cli:main"
+
+[tool.setuptools.package-data]
+retro_tv = ["static/*", "schema.sql"]

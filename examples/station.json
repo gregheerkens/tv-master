@@ -1,0 +1,12 @@
+{
+  "historical_start": "1995-07-18T16:00:00-04:00",
+  "timezone": "America/New_York",
+  "seed": "my-local-station",
+  "market": {"id": "rochester", "name": "Rochester, NY"},
+  "provider": {"id": "home", "name": "Personal illustrative lineup"},
+  "lineup": {"id": "personal-1995", "valid_from": "1995-01-01", "valid_until": "1996-01-01"},
+  "channels": [
+    {"number": "1", "service_id": "kids", "name": "Summer Kids TV"},
+    {"number": "2", "service_id": "late", "name": "Late Night Local"}
+  ]
+}
