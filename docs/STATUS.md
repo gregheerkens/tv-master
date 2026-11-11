@@ -19,7 +19,7 @@
 
 ## Validation performed
 
-- 16 Python tests passed, including a real FFmpeg detection → review → export →
+- 24 Python tests passed, including a real FFmpeg detection → review → export →
   catalog import → physical extraction round trip. The archival fixture remained
   byte-for-byte unchanged.
 - Concurrent writers produced one contiguous, nonoverlapping schedule.
@@ -35,6 +35,17 @@
 - Python compile checks and JavaScript syntax checks passed.
 
 ## Known gaps and next steps
+
+The v2 recordkeeping update adds normalized content identities, dated station and
+primary-network lookup, themed-channel tag matching, seasonal eligibility windows,
+recording quality/alerts, content versus recording exclusions, and separate
+scheduled/aired/viewed statistics. Existing SQLite stations migrate additively.
+See `RECORDKEEPING.md`, `DATA_SOURCES.md` and ADR 0002. Metadata-only operations
+require no media tools or AI. TV MASTER is the provisional display name.
+
+The new tests cover legacy migration, period/network lookup, seasonal windows,
+theme matching, inherited series bans, per-copy exclusions, unchanged published
+slots, and idempotent explicit viewing records.
 
 No automatic semantic identification/date research, catalog review GUI, full
 historical-airing importer, acquisition coverage reports, campaign optimizer,

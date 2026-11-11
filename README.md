@@ -1,4 +1,4 @@
-# Retro TV
+# TV MASTER
 
 A local period-TV station built from your own prepared library. Programs, ads,
 promos and bumpers become continuous, reproducible broadcasts. The player and
@@ -133,3 +133,14 @@ adapter for the companion: known labeled examples, calibrated match confidence,
 reviewable metadata suggestions, and round-trip import into the existing catalog.
 Historical schedule normalization and coverage reports remain in the broader
 roadmap. See `docs/STATUS.md` for validation and implementation inventory.
+
+## Catalog records and personal decisions
+
+The additive v2 catalog separates content identities from recording spans,
+supports custom/themed/historical channels, and stores dated station/affiliation
+facts independently of cable positions. Seasonal eligibility windows, quality
+alerts, content bans, recording exclusions and scheduled/aired/viewed statistics
+are documented in [RECORDKEEPING](docs/RECORDKEEPING.md), with an optional
+`examples/records.json` import. Existing databases migrate without resetting the
+clock or changing published slots. Historical lookup uses imported evidence;
+automatic historical-data retrieval is not yet implemented.

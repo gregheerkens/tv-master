@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "contents": [
+    {"id":"example-series","kind":"series","title":"Your example series","tags":["cartoon","summer"]},
+    {"id":"example-episode","kind":"episode","title":"Your example series","parent_id":"example-series","episode_title":null,"season_number":null,"episode_number":null,"original_air_date":null,"episode_metadata":null,"description":"Illustrative identity; replace with reviewed information"}
+  ],
+  "program_links": [{"program_id":"episode-1","content_id":"example-episode"}],
+  "asset_links": [{"asset_id":"act-1","content_id":"example-episode"},{"asset_id":"act-2","content_id":"example-episode"}],
+  "channels": [{"service_id":"kids","mode":"themed","theme_tags":["cartoon"]}],
+  "windows": [
+    {"id":"example-summer-window","content_id":"example-episode","valid_from":"1995-01-01","valid_until":"1996-01-01","months":[6,7,8],"service_id":"kids","evidence_state":"user_defined","provenance":{"note":"Illustrative personal scheduling rule, not a verified historical airing"}}
+  ]
+}

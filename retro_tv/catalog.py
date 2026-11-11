@@ -12,6 +12,12 @@ def connect(path):
     db = sqlite3.connect(path, timeout=30)
     db.row_factory = sqlite3.Row
     db.executescript(Path(__file__).with_name('schema.sql').read_text())
+    db.executescript(Path(__file__).with_name('records.sql').read_text())
+    if db.execute('PRAGMA user_version').fetchone()[0] < 2:
+        from .records import backfill
+        with db:
+            backfill(db)
+            db.execute('PRAGMA user_version=2')
     return db
 
 
@@ -115,3 +121,5 @@ def import_library(db, document, base, *, verify_media=True):
                        (program['id'], program['title'], json.dumps(parts),
                         services(program, known), start, end,
                         json.dumps(metadata(program))))
+        from .records import backfill
+        backfill(db)

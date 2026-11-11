@@ -5,6 +5,7 @@ import math
 import time
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+from .records import Policy, backfill
 
 HORIZON_MS = 72 * 60 * 60 * 1000
 SLOT_MS = 30 * 60 * 1000
@@ -40,6 +41,7 @@ def initialize(db, config, *, real_now=None):
             db.execute('INSERT INTO service VALUES (?,?)', (entry['service_id'], entry['name']))
             db.execute('INSERT INTO lineup_entry VALUES (?,?,?)',
                        (lineup['id'], str(entry['number']), entry['service_id']))
+        backfill(db)
 
 
 def clock(db, real_now=None):
@@ -88,12 +90,13 @@ def compose(db, service, start, state):
     """
     zone = ZoneInfo(state['timezone'])
     day = datetime.fromtimestamp(start/1000, zone).date().isoformat()
+    policy = Policy(db)
     assets = {r['id']: dict(r) for r in db.execute(
         'SELECT asset.*,source.path,source.sha256 FROM asset JOIN source ON source.id=asset.source_id')}
     candidates = []
     for row in db.execute('SELECT * FROM program ORDER BY id'):
         parts = [assets[p] for p in json.loads(row['parts'])]
-        if not eligible(row, service, day) or not all(eligible(p, service, day) for p in parts):
+        if not eligible(row, service, day) or not policy.allowed(row['id'],service,day,program=True) or not all(eligible(p, service, day) and policy.allowed(p['id'],service,day) for p in parts):
             continue
         duration = sum(p['out_ms']-p['in_ms'] for p in parts)
         length = max(SLOT_MS, math.ceil(duration/SLOT_MS)*SLOT_MS)
@@ -104,7 +107,7 @@ def compose(db, service, start, state):
         daypart_ok = all(daypart_matches(row, datetime.fromtimestamp(t/1000, zone))
                          for t in range(start, start+length, 60000))
         daypart_ok = daypart_ok and daypart_matches(row, datetime.fromtimestamp((start+length-1)/1000, zone))
-        if daypart_ok and eligible(row, service, last_day) and all(eligible(p, service, last_day) for p in parts):
+        if daypart_ok and eligible(row, service, last_day) and policy.allowed(row['id'],service,last_day,program=True) and all(eligible(p, service, last_day) and policy.allowed(p['id'],service,last_day) for p in parts):
             candidates.append((dict(row), parts, length))
     previous = db.execute('SELECT program_id FROM broadcast WHERE service_id=? ORDER BY start_ms DESC LIMIT 1',
                           (service,)).fetchone()
@@ -137,7 +140,8 @@ def compose(db, service, start, state):
         nonlocal cursor
         last_day = datetime.fromtimestamp((cursor+max(1,budget)-1)/1000, zone).date().isoformat()
         pool = [a for a in assets.values() if a['kind'] != 'program'
-                and eligible(a, service, day) and eligible(a, service, last_day)]
+                and eligible(a, service, day) and eligible(a, service, last_day)
+                and policy.allowed(a['id'],service,day) and policy.allowed(a['id'],service,last_day)]
         if opening:
             pool = [a for a in pool if a['kind'] in ('bumper','station_id')]
         index, last = 0, None

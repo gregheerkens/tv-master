@@ -13,4 +13,4 @@ dependencies = []
 retro-tv = "retro_tv.cli:main"
 
 [tool.setuptools.package-data]
-retro_tv = ["static/*", "schema.sql"]
+retro_tv = ["static/*", "*.sql"]
