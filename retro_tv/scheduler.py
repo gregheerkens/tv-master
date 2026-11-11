@@ -93,13 +93,35 @@ def compose(db, service, start, state):
     policy = Policy(db)
     assets = {r['id']: dict(r) for r in db.execute(
         'SELECT asset.*,source.path,source.sha256 FROM asset JOIN source ON source.id=asset.source_id')}
+    expected=db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms<=? AND end_ms>?',
+                        (service,start,start)).fetchone()
+    override=db.execute('SELECT * FROM airing_override WHERE airing_id=?',(expected['id'],)).fetchone() if expected else None
+    following=db.execute('SELECT min(start_ms) FROM historical_airing WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0]
+    boundary=expected['end_ms'] if expected else min(start+SLOT_MS,following) if following else start+SLOT_MS
+    historical_mode=policy.profiles.get(service,{}).get('mode')=='historical'
+    def identity_matches(program_id,target):
+        identity=policy.program_ids.get(program_id);seen=set()
+        while identity and identity not in seen:
+            if identity==target:return True
+            seen.add(identity);identity=policy.parents.get(identity)
+        return False
     candidates = []
     for row in db.execute('SELECT * FROM program ORDER BY id'):
+        if expected:
+            if start!=expected['start_ms']:continue
+            if override:
+                if row['id']!=override['program_id']:continue
+            elif expected['content_id']:
+                if not identity_matches(row['id'],expected['content_id']):continue
+            elif row['title'].casefold()!=expected['title'].casefold():continue
+        elif historical_mode:
+            continue
         parts = [assets[p] for p in json.loads(row['parts'])]
         if not eligible(row, service, day) or not policy.allowed(row['id'],service,day,program=True) or not all(eligible(p, service, day) and policy.allowed(p['id'],service,day) for p in parts):
             continue
         duration = sum(p['out_ms']-p['in_ms'] for p in parts)
-        length = max(SLOT_MS, math.ceil(duration/SLOT_MS)*SLOT_MS)
+        length = expected['end_ms']-start if expected else max(SLOT_MS, math.ceil(duration/SLOT_MS)*SLOT_MS)
+        if duration>length or (following and start+length>following):continue
         if length > 12 * 60 * 60 * 1000:
             continue
         last_day = datetime.fromtimestamp((start+length-1)/1000, zone).date().isoformat()
@@ -116,12 +138,17 @@ def compose(db, service, start, state):
         candidates = alternate
     candidates.sort(key=lambda p: rank(state['seed'], service, start, p[0]['id']))
     chosen = candidates[0] if candidates else None
-    length = chosen[2] if chosen else SLOT_MS
+    length = chosen[2] if chosen else boundary-start
     ident = rank(state['seed'], service, start)[:32]
-    title = chosen[0]['title'] if chosen else 'Off air — library gap'
+    title = chosen[0]['title'] if chosen else 'Missing: '+expected['title'] if expected else 'Listings unavailable' if historical_mode else 'Off air — library gap'
+    evidence=('substituted' if override else expected['evidence_state']) if chosen and expected else 'composed' if chosen else 'missing'
     db.execute('INSERT INTO broadcast VALUES (?,?,?,?,?,?,?)',
                (ident, service, start, start+length, title,
-                chosen[0]['id'] if chosen else None, 'composed' if chosen else 'missing'))
+                chosen[0]['id'] if chosen else None, evidence))
+    if expected:
+        db.execute('INSERT INTO broadcast_context VALUES (?,?,?,?)',(ident,expected['id'],expected['evidence_state'],
+            json.dumps({'listing':json.loads(expected['provenance']),'substitution':override['note'] if override else None})))
+    needed=[dict(r) for r in db.execute('SELECT * FROM airing_requirement WHERE airing_id=?',(expected['id'],))] if expected else []
     cursor = start
 
     def emit(asset, duration=None, reason=None):
@@ -154,9 +181,14 @@ def compose(db, service, start, state):
                 if not opening:
                     emit(None, budget, 'No eligible whole spot fits the remaining break')
                 return budget
-            fitting.sort(key=lambda a: rank(state['seed'], service, cursor, index, a['id']))
+            def matches(a,r):return a['kind']==r['kind'] and (not r['content_id'] or policy.asset_ids.get(a['id'])==r['content_id'])
+            fitting.sort(key=lambda a: (not any(r['duration_ms']>0 and matches(a,r) for r in needed),
+                                        rank(state['seed'], service, cursor, index, a['id'])))
             asset = fitting[0]
             emit(asset)
+            for requirement in needed:
+                if requirement['duration_ms']>0 and matches(asset,requirement):
+                    requirement['duration_ms']-=asset['out_ms']-asset['in_ms'];break
             budget -= asset['out_ms']-asset['in_ms']
             last, index = asset['id'], index+1
             if opening:
@@ -164,7 +196,8 @@ def compose(db, service, start, state):
         return 0
 
     if not chosen:
-        emit(None, length, 'No approved program matches this service and historical date')
+        reason='Missing required program: '+expected['title'] if expected else 'No historical listing for this time' if historical_mode else 'No approved program matches this service and historical date'
+        emit(None, length, reason)
     else:
         parts = chosen[1]
         remaining = length - sum(p['out_ms']-p['in_ms'] for p in parts)
@@ -202,15 +235,22 @@ def extend(db, *, real_now=None):
 
 
 def guide(db, now):
+    from .health import timeline_health
     end = now+HORIZON_MS
     channels = []
     zone = ZoneInfo(db.execute('SELECT timezone FROM state').fetchone()[0])
     day = datetime.fromtimestamp(now/1000, zone).date().isoformat()
     for service in db.execute('SELECT service.*,lineup_entry.channel FROM service JOIN lineup_entry ON service.id=lineup_entry.service_id JOIN lineup ON lineup.id=lineup_entry.lineup_id WHERE lineup.valid_from<=? AND lineup.valid_until>? ORDER BY length(lineup_entry.channel),lineup_entry.channel', (day,day)):
+        first_start=db.execute('SELECT min(start_ms) FROM broadcast WHERE service_id=? AND end_ms>?',(service['id'],now)).fetchone()[0]
+        health=timeline_health(db,service['id'],first_start if first_start is not None else now,end)
         entries = []
         for item in db.execute('SELECT * FROM broadcast WHERE service_id=? AND end_ms>? AND start_ms<? ORDER BY start_ms',
                                (service['id'], now, end)):
             entry = dict(item)
+            entry['health']=health.get(item['id'],{'status':'missing','reasons':['No segment metadata']})
+            content=db.execute('''SELECT c.episode_title,c.description,c.original_air_date FROM content c
+                  JOIN program_content p ON p.content_id=c.id WHERE p.program_id=?''',(item['program_id'],)).fetchone()
+            entry['content']=dict(content) if content else None
             entry['visible_start_ms'] = max(now, item['start_ms'])
             entry['visible_end_ms'] = min(end, item['end_ms'])
             # Do not expose scheduling beyond the three-day horizon.

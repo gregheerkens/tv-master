@@ -21,12 +21,14 @@ python -m retro_tv serve
 ```
 
 Open **http://127.0.0.1:8787**. The demo generates small colored test videos,
-initializes a fictional two-channel lineup, and plays them at the correct point
+initializes a fictional six-channel lineup, and plays them at the correct point
 on a simulated July 1995 clock. It contains no TV footage or verified historical
 lineup claims. Short demo shows intentionally leave conspicuous filler slates.
 
-Up/down selects a channel; Enter/OK tunes it. F toggles fullscreen, G returns to
-the guide. A browser may require the resume button before allowing sound.
+Arrows browse channel/time cells; Enter/OK tunes a current listing. G cycles the
+full-PIP guide, bottom-third overlay and live TV. I opens details, number keys
+tune directly, F toggles fullscreen, and M opens the manager. A browser may require
+the resume button before allowing sound.
 
 ## Use a prepared library
 
@@ -124,9 +126,10 @@ demo; it uses externally installed Playwright and Chromium.
 ## Current boundaries
 
 The first delivery adapter is a browser player, not an HLS/IPTV server or TV APK.
-The UI is intentionally small. There is no catalog editing GUI yet. The composer
-uses simple deterministic rotation with immediate-repeat avoidance, not a full
-campaign-frequency optimizer or historical listings importer. Breaks must be
+The manager includes analysis, file linking/repair and explicit substitutions;
+there is no full catalog/segmentation editor yet. The composer uses simple
+deterministic rotation with immediate-repeat avoidance, not a full campaign-
+frequency optimizer or automatic historical listings scraper. Breaks must be
 provided manually as ordered program parts. It does not fabricate missing episode
 identity, guaranteed rerun brackets or local station history.
 
@@ -146,3 +149,17 @@ are documented in [RECORDKEEPING](docs/RECORDKEEPING.md), with an optional
 `examples/records.json` import. Existing databases migrate without resetting the
 clock or changing published slots. Historical lookup uses imported evidence;
 automatic historical-data retrieval is not yet implemented.
+
+## Classic guide and station manager
+
+The TV guide uses a fixed SD 640×480 / 4:3 layout inspired by early digital cable
+firmware. It has full-PIP and bottom-third modes, remote-key navigation and
+text-labeled colors for ready, partial, missing, offline, substituted and unknown
+slots. `/manager` assesses a channel or theme for one to three days, reports media
+and historical-evidence gaps, and lets you locate media or record substitutions.
+See [guide, manager and visual references](docs/GUIDE_AND_MANAGER.md).
+
+Preview: [full guide](docs/screenshots/guide-full.png),
+[bottom-third guide](docs/screenshots/guide-mini.png),
+[station manager](docs/screenshots/manager.png). Screenshots use generated test
+patterns and a fictional lineup; they contain no actual broadcast footage.

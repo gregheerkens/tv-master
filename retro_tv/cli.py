@@ -24,6 +24,13 @@ def main():
     add_recording_arguments(recording)
     metadata = sub.add_parser('import-records', help='Import identities, channel history and eligibility windows')
     metadata.add_argument('manifest', type=Path)
+    plan=sub.add_parser('import-plan',help='Import sourced historical airings and known continuity requirements')
+    plan.add_argument('manifest',type=Path)
+    assessment=sub.add_parser('assess',help='Analyze a separate scratch plan without changing live TV')
+    assessment.add_argument('--service',required=True);assessment.add_argument('--date',required=True)
+    assessment.add_argument('--days',type=int,choices=[1,2,3],default=1)
+    assessment.add_argument('--mode',choices=['theme','historical','channel'],default='channel')
+    assessment.add_argument('--tags',default='')
     lookup = sub.add_parser('channels', help='Look up imported dated station/affiliation/lineup facts')
     lookup.add_argument('--market', required=True)
     lookup.add_argument('--provider', required=True)
@@ -73,6 +80,14 @@ def main():
             elif args.command == 'import-records':
                 records.import_records(db,json.loads(args.manifest.read_text()))
                 print('Catalog records imported. Published programming is unchanged.')
+            elif args.command == 'import-plan':
+                from .manager import import_plan
+                import_plan(db,json.loads(args.manifest.read_text()))
+                print('Historical listings imported; published programming is unchanged.')
+            elif args.command == 'assess':
+                from .manager import assess
+                print(json.dumps(assess(db,{'service_id':args.service,'date':args.date,'days':args.days,
+                    'mode':args.mode,'tags':[t.strip() for t in args.tags.split(',') if t.strip()]}),indent=2))
             elif args.command == 'channels':
                 print(json.dumps(records.channel_lookup(db,args.market,args.provider,args.date),indent=2))
             elif args.command == 'exclude':

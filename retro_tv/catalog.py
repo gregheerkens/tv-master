@@ -14,6 +14,7 @@ def connect(path):
     db.executescript(Path(__file__).with_name('schema.sql').read_text())
     db.executescript(Path(__file__).with_name('records.sql').read_text())
     db.executescript(Path(__file__).with_name('ingest.sql').read_text())
+    db.executescript(Path(__file__).with_name('manager.sql').read_text())
     if db.execute('PRAGMA user_version').fetchone()[0] < 2:
         from .records import backfill
         with db:
@@ -143,3 +144,7 @@ def import_library(db, document, base, *, verify_media=True):
                         json.dumps(metadata(program))))
         from .records import backfill
         backfill(db)
+        for collection,table,key in (('assets','asset_content','asset_id'),('programs','program_content','program_id')):
+            for item in document.get(collection,[]):
+                if item.get('content_id'):
+                    db.execute(f'UPDATE {table} SET content_id=? WHERE {key}=?',(item['content_id'],item['id']))

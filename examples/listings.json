@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "airings": [
+    {
+      "id": "synthetic-summer-afternoon",
+      "service_id": "kids",
+      "content_id": "example-episode",
+      "title": "Illustrative summer episode",
+      "start": "1995-07-18T16:00:00-04:00",
+      "end": "1995-07-18T16:30:00-04:00",
+      "evidence_state": "inferred",
+      "provenance": {"origin":"Synthetic example, not an actual historical broadcast claim"},
+      "requirements": [
+        {
+          "id": "synthetic-bumper-requirement",
+          "kind": "bumper",
+          "duration_ms": 15000,
+          "note": "Period network continuity for this user-composed block",
+          "provenance": {"origin":"User-defined synthetic block requirement"}
+        },
+        {
+          "id": "synthetic-commercial-requirement",
+          "kind": "commercial",
+          "duration_ms": 180000,
+          "note": "Three minutes of period-eligible advertising",
+          "provenance": {"origin":"User-defined synthetic block requirement"}
+        }
+      ]
+    }
+  ]
+}

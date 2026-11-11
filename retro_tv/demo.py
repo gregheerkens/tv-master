@@ -16,7 +16,11 @@ def create(db, directory):
             'provider':{'id':'home','name':'Personal demo; not a historical lineup'},
             'lineup':{'id':'demo-1995','valid_from':'1995-01-01','valid_until':'2100-01-01'},
             'channels':[{'number':'1','service_id':'kids','name':'SUMMER CLUB'},
-                        {'number':'2','service_id':'late','name':'LOCAL AFTER DARK'}]}
+                        {'number':'2','service_id':'late','name':'LOCAL AFTER DARK'},
+                        {'number':'3','service_id':'movies','name':'THE MOVIE SHELF'},
+                        {'number':'4','service_id':'animation','name':'ANIMATION CLUB'},
+                        {'number':'5','service_id':'oddities','name':'ODDITIES'},
+                        {'number':'6','service_id':'access','name':'LOCAL ACCESS'}]}
     sources=[];assets=[];programs=[]
     for ident,color,duration,kind in [('show-a','navy',120,'program'),('show-b','purple',150,'program'),
                                      ('ad','teal',60,'commercial'),('bumper','maroon',5,'bumper')]:
@@ -31,7 +35,7 @@ def create(db, directory):
                        'valid_from':'1990-01-01','valid_until':'2100-01-01','services':[],
                        'metadata':{'review_status':'approved','evidence':'synthetic fixture'}})
         if kind=='program':
-            programs.append({'id':ident,'title':f'Test Pattern Theater: {ident}', 'parts':[ident],
+            programs.append({'id':ident,'title':f'Test Pattern {ident[-1].upper()}', 'parts':[ident],
                              'services':[],'valid_from':'1990-01-01','valid_until':'2100-01-01'})
     initialize(db,config)
     document={'version':1,'sources':sources,'assets':assets,'programs':programs}
@@ -40,4 +44,7 @@ def create(db, directory):
         if p['kind']!='program':
             p['services']=['kids']
     import_library(db,document,directory)
+    with db:
+        db.execute('UPDATE content SET tags=? WHERE id=?',(json.dumps(['cartoon','summer']),'program:show-a'))
+        db.execute('UPDATE content SET tags=? WHERE id=?',(json.dumps(['horror','late-night']),'program:show-b'))
     (directory/'library.json').write_text(json.dumps(document,indent=2))

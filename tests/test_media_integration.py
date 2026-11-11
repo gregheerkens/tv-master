@@ -11,6 +11,7 @@ from retro_tv.catalog import connect, import_library, probe
 from retro_tv.companion import analyze, export_review, extract
 from retro_tv.scheduler import initialize
 from retro_tv.ingest import ingest_path
+from retro_tv.manager import attach_media
 
 
 @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg not installed')
@@ -52,6 +53,11 @@ class MediaIntegration(unittest.TestCase):
                 self.assertAlmostEqual(probe(path),2250,delta=100)
             self.assertEqual(source.read_bytes(),original)
             self.assertEqual(len(list(directory.glob('*.mp4'))),1)
+            content_id=db.execute('SELECT content_id FROM asset_content ORDER BY asset_id LIMIT 1').fetchone()[0]
+            linked=attach_media(db,{'content_id':content_id,'folder':str(directory),'file':'tape.mp4',
+                'valid_from':'1995-01-01','valid_until':'1996-01-01'})
+            self.assertEqual(db.execute('SELECT content_id FROM asset_content WHERE asset_id=?',(linked['asset_id'],)).fetchone()[0],content_id)
+            with self.assertRaises(ValueError):attach_media(db,{'content_id':content_id,'folder':str(directory/'cuts'),'file':'../tape.mp4'})
             db.close()
 
 
