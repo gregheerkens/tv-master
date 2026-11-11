@@ -6,7 +6,8 @@ const HALF_HOUR = 1800000, WINDOW = 3 * HALF_HOUR;
 let data, channel, segment, selectedChannel = 0, cursor = 0, windowStart = 0;
 let generation = 0, tuning = false, skew = 0, mode = 'full', futureBrowse = false;
 let digits = '', digitTimer, noticeTimer;
-function sizeStage(){ $('tv-stage').style.transform=`translate(-50%,-50%) scale(${Math.min(innerWidth/640,innerHeight/480)})`; }
+function guideScale(){const fit=Math.min(innerWidth/640,innerHeight/480);return fit>=2?Math.floor(fit):fit;}
+function sizeStage(){ $('tv-stage').style.transform=`translate(-50%,-50%) scale(${guideScale()})`; }
 addEventListener('resize',sizeStage);sizeStage();
 const statuses = {ready:'READY', partial:'PARTIAL / UNFILLED', missing:'CONTENT MISSING', offline:'SOURCE FILE OFFLINE', substituted:'EXPLICIT SUBSTITUTE',unknown:'LISTINGS UNKNOWN'};
 async function api(path) {
@@ -27,9 +28,10 @@ function toast(message) {
   $('notice').textContent = message; $('notice').hidden = false;
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $('notice').hidden = true, 4500);
 }
+function slateBrand(){const img=document.createElement('img');img.src='/assets/brand/logo-monochrome-cream.svg';img.alt='TV MASTER';img.className='slate-brand';return img;}
 function slate(title, message) {
   $('slate').hidden = false;
-  $('slate').replaceChildren(text('strong','TV MASTER'),text('h2',title),text('p',message));
+  $('slate').replaceChildren(slateBrand(),text('h2',title),text('p',message));
 }
 function setMode(next) {
   mode = next; document.body.className = `mode-${mode}`;
@@ -60,7 +62,7 @@ function render() {
   $('guide-date').textContent = new Date(windowStart).toLocaleDateString('en-US',{timeZone:data.timezone,weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
   $('guide-window').textContent = `72-HOUR GUIDE · ${time(windowStart)}`;
   $('times').replaceChildren(...[0,1,2].map(i => text('span',time(windowStart + i * HALF_HOUR))));
-  const visible = mode === 'mini' ? 2 : 5;
+  const visible = mode === 'mini' ? 2 : 4;
   let first = Math.max(0, Math.min(selectedChannel - Math.floor(visible / 2),data.channels.length - visible));
   const rows = data.channels.slice(first,first + visible);
   $('channels').replaceChildren();

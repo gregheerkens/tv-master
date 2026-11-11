@@ -1,0 +1,18 @@
+{
+  "name": "TV MASTER",
+  "model": "TV-1985",
+  "canonical_reference": "reference/manual-cover-original.png",
+  "palette": {
+    "paper": "#F2E7D3",
+    "paper-light": "#FAEED8",
+    "ink": "#24201B",
+    "cream-outline": "#F7E8D5",
+    "gold": "#D9AA43",
+    "orange": "#DC8744",
+    "rust": "#C55C46",
+    "red": "#A93F3C",
+    "guide-blue": "#0A1274"
+  },
+  "on_tv_guide_is_separate": true,
+  "logo_source": "original image vector traced contours"
+}

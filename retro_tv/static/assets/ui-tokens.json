@@ -1,0 +1,31 @@
+{
+  "layers": {
+    "admin": {
+      "paper": "#f4e9d3",
+      "ink": "#2c221d",
+      "mustard": "#e7b823",
+      "rust": "#bf4631",
+      "dark_header": "#39291f",
+      "focus": "#f5cc33",
+      "base_font": "Arial/Helvetica or similar condensed sans serif"
+    },
+    "guide": {
+      "background": "#000064",
+      "cell_dark": "#000052",
+      "cell_focus": "#224bd2",
+      "text": "#e8e9fb",
+      "highlight": "#ffff2f",
+      "frame": "#aab5df",
+      "reference_canvas": {
+        "width": 640,
+        "height": 480
+      },
+      "font": "A real low-res bitmap font at the reference canvas; keep DOM-generated text separate"
+    }
+  },
+  "design_policy": {
+    "baked_text_in_graphics": false,
+    "runtime_text": true,
+    "archive_provenance_not_a_visual_state": true
+  }
+}

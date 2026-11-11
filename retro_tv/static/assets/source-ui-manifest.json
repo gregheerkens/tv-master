@@ -1,0 +1,695 @@
+{
+  "schema_version": "1.0",
+  "theme": "TV MASTER / Manual Admin + Late-90s Blue Guide",
+  "assets": [
+    {
+      "id": "button-primary",
+      "layer": "admin",
+      "svg": "svg/admin/button-primary.svg",
+      "png_2x": "png/admin/button-primary.png",
+      "intrinsic_size": [
+        210,
+        58
+      ],
+      "description": "Textless primary action; overlay button label at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "button-secondary",
+      "layer": "admin",
+      "svg": "svg/admin/button-secondary.svg",
+      "png_2x": "png/admin/button-secondary.png",
+      "intrinsic_size": [
+        210,
+        58
+      ],
+      "description": "Textless secondary action; overlay button label at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "button-danger",
+      "layer": "admin",
+      "svg": "svg/admin/button-danger.svg",
+      "png_2x": "png/admin/button-danger.png",
+      "intrinsic_size": [
+        210,
+        58
+      ],
+      "description": "Textless danger action; overlay button label at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "button-disabled",
+      "layer": "admin",
+      "svg": "svg/admin/button-disabled.svg",
+      "png_2x": "png/admin/button-disabled.png",
+      "intrinsic_size": [
+        210,
+        58
+      ],
+      "description": "Textless disabled action; overlay button label at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "button-utility",
+      "layer": "admin",
+      "svg": "svg/admin/button-utility.svg",
+      "png_2x": "png/admin/button-utility.png",
+      "intrinsic_size": [
+        210,
+        58
+      ],
+      "description": "Textless utility action; overlay button label at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "tab-selected",
+      "layer": "admin",
+      "svg": "svg/admin/tab-selected.svg",
+      "png_2x": "png/admin/tab-selected.png",
+      "intrinsic_size": [
+        218,
+        58
+      ],
+      "description": "Textless active tab; overlay tab title at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "tab-default",
+      "layer": "admin",
+      "svg": "svg/admin/tab-default.svg",
+      "png_2x": "png/admin/tab-default.png",
+      "intrinsic_size": [
+        218,
+        58
+      ],
+      "description": "Textless inactive tab; overlay tab title at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-local",
+      "layer": "admin",
+      "svg": "svg/admin/badge-local.svg",
+      "png_2x": "png/admin/badge-local.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-remote",
+      "layer": "admin",
+      "svg": "svg/admin/badge-remote.svg",
+      "png_2x": "png/admin/badge-remote.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-unknown",
+      "layer": "admin",
+      "svg": "svg/admin/badge-unknown.svg",
+      "png_2x": "png/admin/badge-unknown.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-partial",
+      "layer": "admin",
+      "svg": "svg/admin/badge-partial.svg",
+      "png_2x": "png/admin/badge-partial.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-missing",
+      "layer": "admin",
+      "svg": "svg/admin/badge-missing.svg",
+      "png_2x": "png/admin/badge-missing.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-substituted",
+      "layer": "admin",
+      "svg": "svg/admin/badge-substituted.svg",
+      "png_2x": "png/admin/badge-substituted.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "badge-server",
+      "layer": "admin",
+      "svg": "svg/admin/badge-server.svg",
+      "png_2x": "png/admin/badge-server.png",
+      "intrinsic_size": [
+        164,
+        40
+      ],
+      "description": "Unlabeled semantic status chip; renderer sets label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "section-heading",
+      "layer": "admin",
+      "svg": "svg/admin/section-heading.svg",
+      "png_2x": "png/admin/section-heading.png",
+      "intrinsic_size": [
+        540,
+        48
+      ],
+      "description": "Brown rounded label-free section heading",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "panel-heading",
+      "layer": "admin",
+      "svg": "svg/admin/panel-heading.svg",
+      "png_2x": "png/admin/panel-heading.png",
+      "intrinsic_size": [
+        540,
+        290
+      ],
+      "description": "Complete cream admin panel with blank dark title bar, no contents",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "info-card",
+      "layer": "admin",
+      "svg": "svg/admin/info-card.svg",
+      "png_2x": "png/admin/info-card.png",
+      "intrinsic_size": [
+        440,
+        196
+      ],
+      "description": "Blank cream card with dark title bar",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "mode-tile",
+      "layer": "admin",
+      "svg": "svg/admin/mode-tile.svg",
+      "png_2x": "png/admin/mode-tile.png",
+      "intrinsic_size": [
+        264,
+        248
+      ],
+      "description": "Blank illustrated-mode tile with image area and unlabeled black title band",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "form-input",
+      "layer": "admin",
+      "svg": "svg/admin/form-input.svg",
+      "png_2x": "png/admin/form-input.png",
+      "intrinsic_size": [
+        480,
+        54
+      ],
+      "description": "Blank text entry field",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "form-select",
+      "layer": "admin",
+      "svg": "svg/admin/form-select.svg",
+      "png_2x": "png/admin/form-select.png",
+      "intrinsic_size": [
+        480,
+        54
+      ],
+      "description": "Blank select field with dropdown triangle",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "search-input",
+      "layer": "admin",
+      "svg": "svg/admin/search-input.svg",
+      "png_2x": "png/admin/search-input.png",
+      "intrinsic_size": [
+        480,
+        54
+      ],
+      "description": "Blank search entry with static magnifier icon",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "progress-track",
+      "layer": "admin",
+      "svg": "svg/admin/progress-track.svg",
+      "png_2x": "png/admin/progress-track.png",
+      "intrinsic_size": [
+        480,
+        46
+      ],
+      "description": "Empty progress meter shell; percentage must be computed and rendered",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "progress-fill",
+      "layer": "admin",
+      "svg": "svg/admin/progress-fill.svg",
+      "png_2x": "png/admin/progress-fill.png",
+      "intrinsic_size": [
+        330,
+        28
+      ],
+      "description": "Gold progress fill segment, intended to be clipped to dynamic percentage",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "divider-stripes",
+      "layer": "admin",
+      "svg": "svg/admin/divider-stripes.svg",
+      "png_2x": "png/admin/divider-stripes.png",
+      "intrinsic_size": [
+        540,
+        36
+      ],
+      "description": "Four-color orange/yellow/red decorative horizontal stripe",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "panel-empty-state",
+      "layer": "admin",
+      "svg": "svg/admin/panel-empty-state.svg",
+      "png_2x": "png/admin/panel-empty-state.png",
+      "intrinsic_size": [
+        520,
+        200
+      ],
+      "description": "Blank reusable panel for empty states; runtime label/message needed",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "checkbox-empty",
+      "layer": "admin",
+      "svg": "svg/admin/checkbox-empty.svg",
+      "png_2x": "png/admin/checkbox-empty.png",
+      "intrinsic_size": [
+        36,
+        36
+      ],
+      "description": "Empty checkbox, label should live outside graphic",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "checkbox-checked",
+      "layer": "admin",
+      "svg": "svg/admin/checkbox-checked.svg",
+      "png_2x": "png/admin/checkbox-checked.png",
+      "intrinsic_size": [
+        36,
+        36
+      ],
+      "description": "Selected checkbox, label should live outside graphic",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "radio-empty",
+      "layer": "admin",
+      "svg": "svg/admin/radio-empty.svg",
+      "png_2x": "png/admin/radio-empty.png",
+      "intrinsic_size": [
+        36,
+        36
+      ],
+      "description": "Empty radio button",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "radio-selected",
+      "layer": "admin",
+      "svg": "svg/admin/radio-selected.svg",
+      "png_2x": "png/admin/radio-selected.png",
+      "intrinsic_size": [
+        36,
+        36
+      ],
+      "description": "Selected radio button",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "toggle-off",
+      "layer": "admin",
+      "svg": "svg/admin/toggle-off.svg",
+      "png_2x": "png/admin/toggle-off.png",
+      "intrinsic_size": [
+        108,
+        46
+      ],
+      "description": "Off toggle without label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "toggle-on",
+      "layer": "admin",
+      "svg": "svg/admin/toggle-on.svg",
+      "png_2x": "png/admin/toggle-on.png",
+      "intrinsic_size": [
+        108,
+        46
+      ],
+      "description": "On toggle without label",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "cell-default",
+      "layer": "guide",
+      "svg": "svg/guide/cell-default.svg",
+      "png_2x": "png/guide/cell-default.png",
+      "intrinsic_size": [
+        240,
+        60
+      ],
+      "description": "Blank guide program cell (program name supplied as text)",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "cell-focused",
+      "layer": "guide",
+      "svg": "svg/guide/cell-focused.svg",
+      "png_2x": "png/guide/cell-focused.png",
+      "intrinsic_size": [
+        240,
+        60
+      ],
+      "description": "Blank guide program cell (program name supplied as text)",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "cell-unavailable",
+      "layer": "guide",
+      "svg": "svg/guide/cell-unavailable.svg",
+      "png_2x": "png/guide/cell-unavailable.png",
+      "intrinsic_size": [
+        240,
+        60
+      ],
+      "description": "Blank guide program cell (program name supplied as text)",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "channel-default",
+      "layer": "guide",
+      "svg": "svg/guide/channel-default.svg",
+      "png_2x": "png/guide/channel-default.png",
+      "intrinsic_size": [
+        140,
+        68
+      ],
+      "description": "Blank channel-number/name slot; set channel data at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "channel-focused",
+      "layer": "guide",
+      "svg": "svg/guide/channel-focused.svg",
+      "png_2x": "png/guide/channel-focused.png",
+      "intrinsic_size": [
+        140,
+        68
+      ],
+      "description": "Blank channel-number/name slot; set channel data at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "channel-unavailable",
+      "layer": "guide",
+      "svg": "svg/guide/channel-unavailable.svg",
+      "png_2x": "png/guide/channel-unavailable.png",
+      "intrinsic_size": [
+        140,
+        68
+      ],
+      "description": "Blank channel-number/name slot; set channel data at runtime",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "time-header",
+      "layer": "guide",
+      "svg": "svg/guide/time-header.svg",
+      "png_2x": "png/guide/time-header.png",
+      "intrinsic_size": [
+        224,
+        48
+      ],
+      "description": "Blank guide time/clock header",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "clock-header",
+      "layer": "guide",
+      "svg": "svg/guide/clock-header.svg",
+      "png_2x": "png/guide/clock-header.png",
+      "intrinsic_size": [
+        224,
+        48
+      ],
+      "description": "Blank guide time/clock header",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "date-header",
+      "layer": "guide",
+      "svg": "svg/guide/date-header.svg",
+      "png_2x": "png/guide/date-header.png",
+      "intrinsic_size": [
+        640,
+        42
+      ],
+      "description": "Blank day/date navigator header",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-bar",
+      "layer": "guide",
+      "svg": "svg/guide/guide-bar.svg",
+      "png_2x": "png/guide/guide-bar.png",
+      "intrinsic_size": [
+        640,
+        38
+      ],
+      "description": "Blank guide bar / footer",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-row",
+      "layer": "guide",
+      "svg": "svg/guide/guide-row.svg",
+      "png_2x": "png/guide/guide-row.png",
+      "intrinsic_size": [
+        640,
+        60
+      ],
+      "description": "Example row shape; prefer CSS grid for variable-width program columns",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-frame",
+      "layer": "guide",
+      "svg": "svg/guide/guide-frame.svg",
+      "png_2x": "png/guide/guide-frame.png",
+      "intrinsic_size": [
+        640,
+        340
+      ],
+      "description": "Blank outer guide frame",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-dialog",
+      "layer": "guide",
+      "svg": "svg/guide/guide-dialog.svg",
+      "png_2x": "png/guide/guide-dialog.png",
+      "intrinsic_size": [
+        500,
+        284
+      ],
+      "description": "Blank blue information dialog with distinct empty title bar",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-mini-banner",
+      "layer": "guide",
+      "svg": "svg/guide/guide-mini-banner.svg",
+      "png_2x": "png/guide/guide-mini-banner.png",
+      "intrinsic_size": [
+        520,
+        100
+      ],
+      "description": "Blank channel tune/info banner",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-keycap",
+      "layer": "guide",
+      "svg": "svg/guide/guide-keycap.svg",
+      "png_2x": "png/guide/guide-keycap.png",
+      "intrinsic_size": [
+        144,
+        58
+      ],
+      "description": "Blank selectable yellow-label keycap shell; add label in DOM",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-status-chip",
+      "layer": "guide",
+      "svg": "svg/guide/guide-status-chip.svg",
+      "png_2x": "png/guide/guide-status-chip.png",
+      "intrinsic_size": [
+        170,
+        48
+      ],
+      "description": "Blank status chip; runtime label and state color handled in CSS",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-overlay-lower-third",
+      "layer": "guide",
+      "svg": "svg/guide/guide-overlay-lower-third.svg",
+      "png_2x": "png/guide/guide-overlay-lower-third.png",
+      "intrinsic_size": [
+        640,
+        158
+      ],
+      "description": "Blank lower-third guide overlay over picture",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-pip-frame",
+      "layer": "guide",
+      "svg": "svg/guide/guide-pip-frame.svg",
+      "png_2x": "png/guide/guide-pip-frame.png",
+      "intrinsic_size": [
+        270,
+        194
+      ],
+      "description": "Blank PIP video frame",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-selection-arrow-left",
+      "layer": "guide",
+      "svg": "svg/guide/guide-selection-arrow-left.svg",
+      "png_2x": "png/guide/guide-selection-arrow-left.png",
+      "intrinsic_size": [
+        42,
+        54
+      ],
+      "description": "Remote/selection chevron, left",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-selection-arrow-right",
+      "layer": "guide",
+      "svg": "svg/guide/guide-selection-arrow-right.svg",
+      "png_2x": "png/guide/guide-selection-arrow-right.png",
+      "intrinsic_size": [
+        42,
+        54
+      ],
+      "description": "Remote/selection chevron, right",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-remote-button",
+      "layer": "guide",
+      "svg": "svg/guide/guide-remote-button.svg",
+      "png_2x": "png/guide/guide-remote-button.png",
+      "intrinsic_size": [
+        128,
+        52
+      ],
+      "description": "Blank remote action keycap; runtime key legend text",
+      "text_baked_in": false,
+      "use": "css"
+    },
+    {
+      "id": "guide-number-entry",
+      "layer": "guide",
+      "svg": "svg/guide/guide-number-entry.svg",
+      "png_2x": "png/guide/guide-number-entry.png",
+      "intrinsic_size": [
+        180,
+        76
+      ],
+      "description": "Blank 3-digit channel entry field",
+      "text_baked_in": false,
+      "use": "css"
+    }
+  ]
+}

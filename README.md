@@ -189,3 +189,8 @@ Machine, Channel Surf, Block Party and Manage Broadcasts. Region/provider/tier
 setups drive channel membership. Live meters read the real library; **Test UI**
 is a separate, explicitly simulated preview. Content tools require CLI or an
 explicit loopback-only `serve --admin` maintenance process.
+
+The supplied [corrected branding and textless UI kit](docs/BRANDING_INTEGRATION.md)
+now skin the real manager, forms and SD guide. All labels, counters and listings
+remain live. Original manual artwork is limited to the optional About screen;
+startup stays in the PIP guide.

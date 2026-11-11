@@ -131,3 +131,10 @@ The hosted repository is `gregheerkens/tv-master`. GitHub app access was
 reconnected and the project was uploaded through that connection. The cloud
 terminal's separate `GH_TOKEN` was still invalid at the time of upload; connector
 access does not depend on that terminal credential.
+
+The user-supplied Textless UI v1 and Corrected Branding v2 packs are integrated:
+53 original component SVGs, corrected source-cover marks/icons, responsive warm
+manager/server controls and an independent blue SD/pixel-font guide. Live values
+remain API-driven. The optional About screen holds the original raster family
+illustration. Nested assets and the bundled font/license are included in wheels.
+See `BRANDING_INTEGRATION.md` and `tests/browser-branding.cjs`.

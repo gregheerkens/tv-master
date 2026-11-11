@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="42" height="54" viewBox="0 0 42 54" role="img" aria-label="Blank decorative UI asset">
+<defs>
+
+  <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#162ca1"/><stop offset=".12" stop-color="#07137b"/><stop offset=".8" stop-color="#00005a"/><stop offset="1" stop-color="#000048"/></linearGradient>
+  <linearGradient id="focus" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#648dff"/><stop offset=".13" stop-color="#2d5bdf"/><stop offset=".82" stop-color="#1731aa"/><stop offset="1" stop-color="#071576"/></linearGradient>
+  <linearGradient id="dim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1b234c"/><stop offset=".12" stop-color="#10173f"/><stop offset="1" stop-color="#080d29"/></linearGradient>
+  <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f5f6ff"/><stop offset=".22" stop-color="#8b9ac2"/><stop offset=".48" stop-color="#b6c4df"/><stop offset=".7" stop-color="#5e70a7"/><stop offset="1" stop-color="#dbdef2"/></linearGradient>
+  <pattern id="pixels" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="#839bfa" opacity=".07"/></pattern>
+
+</defs>
+<rect x="2" y="2" width="38" height="50" rx="2" fill="#00001b" stroke="#161b66" stroke-width="2"/>
+<rect x="4.5" y="4.5" width="33" height="45" rx="2" fill="url(#blue)"/>
+<path d="M37 5 H5 V49" fill="none" stroke="#e6eaff" stroke-width="2.0" opacity=".98"/>
+<path d="M5 49 H37 V5" fill="none" stroke="#506baa" stroke-width="2.0"/>
+<path d="M7 46 H34 V8" fill="none" stroke="#11164e" stroke-width="1.5"/>
+<rect x="8" y="8" width="26" height="38" rx="1" fill="url(#pixels)" opacity=".8"/><path d="M15 11 L30 27 L15 43 Z" fill="#e5eaff"/>
+</svg>

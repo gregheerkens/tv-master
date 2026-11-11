@@ -1,0 +1,320 @@
+{
+  "source_packs": [
+    "TV_MASTER_Textless_UI_Assets_v1.zip",
+    "TV_MASTER_Branding_Corrected_v2.zip"
+  ],
+  "files": [
+    {
+      "path": "BRANDING-README.md",
+      "sha256": "47e9c88f61546bbde3be3e535b4842fdf6085af73f120539b0163d1a738d7f71"
+    },
+    {
+      "path": "UI-KIT-README.md",
+      "sha256": "716b3b36e59d2f8cf8f79879fcf0bff9cc5bc8796092970cd9e53ecd1ee0c919"
+    },
+    {
+      "path": "brand/app-monogram-dark.svg",
+      "sha256": "ad6feca299f0f74609b1aebcf8b1ab35a1b8e2105cd2720bf58c239c208b2f2d"
+    },
+    {
+      "path": "brand/app-monogram-paper.svg",
+      "sha256": "f6bf4d3293b42b5fd50b9f32107d414e7784e55e90426458e5815cf19e89d73d"
+    },
+    {
+      "path": "brand/brand-stripes-corner.svg",
+      "sha256": "5e72e3323b9e12a6e032bf970320c3b312713b67937cd56cad7aa57ac4cb110e"
+    },
+    {
+      "path": "brand/brand-stripes.svg",
+      "sha256": "9cd40efbb5aa05ef5915c59fee525c37b52f75792527d0ca88e9e38c28712890"
+    },
+    {
+      "path": "brand/bug-subtle.svg",
+      "sha256": "d505211c224cdbb0df1b836f01a580c74a7a40a8d1abea89c26037a3983fe506"
+    },
+    {
+      "path": "brand/family-original-crop.png",
+      "sha256": "0518db3b0c083338fa485427768ba0a00148b3efd0034d66670ebee3fb29cc48"
+    },
+    {
+      "path": "brand/header-admin.svg",
+      "sha256": "a76a4a022aef11190de2699ded2a2afc0c0c434ab7c5562ba44bb593577f7bc1"
+    },
+    {
+      "path": "brand/logo-monochrome-cream.svg",
+      "sha256": "61184300864be5d21c15eb88740a29b67ef7abb50f161baf2a0f6cb0420aa68a"
+    },
+    {
+      "path": "brand/logo-monochrome-ink.svg",
+      "sha256": "e6bdc026ede92ace659debf7999d5bb41c4f1bcd33ed85eea2c5e6cc228ad738"
+    },
+    {
+      "path": "brand/logo-original-letterform.svg",
+      "sha256": "a417fd5dbd388f8a562276cfa691da2d8ffe90fb1d3fae468bf7f8404efc26da"
+    },
+    {
+      "path": "brand/logo-primary-on-paper.svg",
+      "sha256": "3e099aba418e65082f43f70fe630bca99ac1e7ff1e1a8224c79d256ec743721f"
+    },
+    {
+      "path": "brand/logo-primary-stripes.svg",
+      "sha256": "8b5c7f03dd50a0b0cc8ca7ca547670ab96ab2c622736f4f60fca479852fc132c"
+    },
+    {
+      "path": "brand/model-badge.svg",
+      "sha256": "a7a05dac827f3a2e5c15edb3dd7835863a136c2ea3b6f1d4c468ed8759291da7"
+    },
+    {
+      "path": "brand-tokens.json",
+      "sha256": "1c4bae865b217feee775c2176f1e4af3fd27385769d4cd5044ad1a41ddc88732"
+    },
+    {
+      "path": "fonts/OFL-VT323.txt",
+      "sha256": "27d9af34210253e7ca1251fbace86c6f65b40031d6ce1a75493a1b2093631298"
+    },
+    {
+      "path": "fonts/VT323-Regular.ttf",
+      "sha256": "cf4de751ada78ceac033dbe16a687742939995b77bc2a052ae17a4957958594d"
+    },
+    {
+      "path": "icons/tv-master-180.png",
+      "sha256": "ff5951f9ef0eddc7e396dcd3679ed772917e74b6fdfcb4b9a804673f5eff208b"
+    },
+    {
+      "path": "icons/tv-master-192.png",
+      "sha256": "4773e5c3e944ef1da5e39f7aa8ff31a07dcd3420b7ca26bea27ca7e83a76af79"
+    },
+    {
+      "path": "icons/tv-master-512.png",
+      "sha256": "a65f0ea0d2c4d626b3b2a600d5def3c3a7f8171cce882bebb1a656a603f21563"
+    },
+    {
+      "path": "icons/tv-master-favicon.ico",
+      "sha256": "2dea89b9847149bc87afe6b6bbfcc7c5379a0183dd87941f37f6b8c778d8e527"
+    },
+    {
+      "path": "source-ui-manifest.json",
+      "sha256": "f5852a465b53f46e00148561467caca8998b45d5e82d9e30c9ab1f14a754fbe8"
+    },
+    {
+      "path": "ui/admin/badge-local.svg",
+      "sha256": "4197618609d914395cb610da0437cbf213644faaaecf448e2ff58c0d20e258fa"
+    },
+    {
+      "path": "ui/admin/badge-missing.svg",
+      "sha256": "4a1b073f4d11e55a6716904411f05ace0d3f38bbf1f47cbe9443a50691fa363b"
+    },
+    {
+      "path": "ui/admin/badge-partial.svg",
+      "sha256": "1e0bfcd2b61ade319066cc2fcd5c050dee8dbcf121c9036be99bbbdbafe91d4e"
+    },
+    {
+      "path": "ui/admin/badge-remote.svg",
+      "sha256": "01206265558b8db1dc84e4c86c09afa07a5a795d44307d82634a2359053fbcd4"
+    },
+    {
+      "path": "ui/admin/badge-server.svg",
+      "sha256": "1dcb275f09cb74ba1425435e03cc0ff083b1f9b52a268d4899a810d6f4aeb9fc"
+    },
+    {
+      "path": "ui/admin/badge-substituted.svg",
+      "sha256": "5800e7762f8ec7d0690864d10e3fe2df394add8b4ae36e65e1e07a7c8d5bb6df"
+    },
+    {
+      "path": "ui/admin/badge-unknown.svg",
+      "sha256": "7d6d0a117ab373de0cca3ee0e83a09c52c2ccaf6d0ab2c38f11fa65b61d42890"
+    },
+    {
+      "path": "ui/admin/button-danger.svg",
+      "sha256": "f3a6a7d88bbce1307b58d0bc003890a5e8ca9b8baa41a1fc0853a58ed809e964"
+    },
+    {
+      "path": "ui/admin/button-disabled.svg",
+      "sha256": "0fbef1b08bd503f7c92cb33ec04f10bea3d549656226d843b30a60127ab3b3c5"
+    },
+    {
+      "path": "ui/admin/button-primary.svg",
+      "sha256": "61cbcd0052ddde406096098bf39fe4d0ca3a7ca397111d276e81b109b51a8396"
+    },
+    {
+      "path": "ui/admin/button-secondary.svg",
+      "sha256": "3cb6fe4533ee907954bfce8b0849add9da7834b8ee54f888404386e8b247bd81"
+    },
+    {
+      "path": "ui/admin/button-utility.svg",
+      "sha256": "3cb6fe4533ee907954bfce8b0849add9da7834b8ee54f888404386e8b247bd81"
+    },
+    {
+      "path": "ui/admin/checkbox-checked.svg",
+      "sha256": "c3f7b55f34bead71c34199093221672907b2bc595f7c0f7cd9ecb0bc78fd390b"
+    },
+    {
+      "path": "ui/admin/checkbox-empty.svg",
+      "sha256": "55fea07b39464b0def3783c95d9d432c7325b568debacb1a421ac78487d877f7"
+    },
+    {
+      "path": "ui/admin/divider-stripes.svg",
+      "sha256": "29e25ed59d895f27a4b0d99d7c9bfc7d796b347771ada7fb2f571433d6bd0a87"
+    },
+    {
+      "path": "ui/admin/form-input.svg",
+      "sha256": "f21881f94c63c88f880e4e85dfa296f78f47ac2edd6c3a6ac203d8078687265b"
+    },
+    {
+      "path": "ui/admin/form-select.svg",
+      "sha256": "5a57c7b1332e3e5b4aed6324b499b165a0e4733c39e1bee74eeeaa1b7d341b4d"
+    },
+    {
+      "path": "ui/admin/info-card.svg",
+      "sha256": "d4483d46b2641795e848a8f7551445f6e98d4dd1f7dfa840ef45aaf8441f85e2"
+    },
+    {
+      "path": "ui/admin/mode-tile.svg",
+      "sha256": "d360e8fb433f2a5b839ad7ee8991f11e67f03e57d9cc24a3045992ca5f4134fd"
+    },
+    {
+      "path": "ui/admin/panel-empty-state.svg",
+      "sha256": "e3e14dc3a0d953142f117437ece8362a8620fe1925df0728db12c20a24efaaed"
+    },
+    {
+      "path": "ui/admin/panel-heading.svg",
+      "sha256": "f8b95102c8d86560240ff2c889cd5409bcdf739e87e16d514afcff58d09b807f"
+    },
+    {
+      "path": "ui/admin/progress-fill.svg",
+      "sha256": "e0c28000f4000f7489f58498e6b2649ea3a20aef5f8c0a0548b71d9f56931a27"
+    },
+    {
+      "path": "ui/admin/progress-track.svg",
+      "sha256": "54fac65489effbb4fb09e4212aaba5ec21db87ffeef2799b3086ab3fdd74af46"
+    },
+    {
+      "path": "ui/admin/radio-empty.svg",
+      "sha256": "a0cc23485a76467072a65ee2d6d8faca59e78e0b93f06a509f8bc5018f93252b"
+    },
+    {
+      "path": "ui/admin/radio-selected.svg",
+      "sha256": "feab40002b482fa491f13c993889f960174ad33cf9155964b400a9ef95f2f0b4"
+    },
+    {
+      "path": "ui/admin/search-input.svg",
+      "sha256": "e18e6d7eac00eafa7dbe0a0eac9b6a495dd80d4b0e76aa0fe6ca58b7a0ac1414"
+    },
+    {
+      "path": "ui/admin/section-heading.svg",
+      "sha256": "7f6d4cb7c03289941654132ac0c7ca677205a56b169908ca294ae23da9c3f770"
+    },
+    {
+      "path": "ui/admin/tab-default.svg",
+      "sha256": "dec155c9cd81563f675e561e2903d049103f00f861bfdbfa26eae33126a0c51b"
+    },
+    {
+      "path": "ui/admin/tab-selected.svg",
+      "sha256": "06a0326dc9aec2204738731d3ec5b9338c4e534079a024bc37f972934ece6a07"
+    },
+    {
+      "path": "ui/admin/toggle-off.svg",
+      "sha256": "84b5d39514614e148861e3162edb8198448d9a2193e27a39db5da99989f9c78f"
+    },
+    {
+      "path": "ui/admin/toggle-on.svg",
+      "sha256": "c2a880691c435635a715a7e448d9f2b436b00fc7c6d5a19314bf4faf1f23c31a"
+    },
+    {
+      "path": "ui/guide/cell-default.svg",
+      "sha256": "0a0085e0d28e517ee73e0d082d06c866438b29de78c58716b5c160af852fe2a7"
+    },
+    {
+      "path": "ui/guide/cell-focused.svg",
+      "sha256": "8ca74b25c24209757619095c0e0cb1c6aa3e241946fcf46aa71c1dc4344e187e"
+    },
+    {
+      "path": "ui/guide/cell-unavailable.svg",
+      "sha256": "4ee0c9f633bbe121cf57251c61d9c831e22935d6359b8afffc4eaabd8c17105a"
+    },
+    {
+      "path": "ui/guide/channel-default.svg",
+      "sha256": "93bceaaed705ff27ef94d2a8ccb1f7a2ec9a8c715c2feedc737b9f6d6176ddf6"
+    },
+    {
+      "path": "ui/guide/channel-focused.svg",
+      "sha256": "10b5435910589256d59a79eb2652a62cfe999e73d0baa5d42f2cfdc4ae241894"
+    },
+    {
+      "path": "ui/guide/channel-unavailable.svg",
+      "sha256": "c0996221a755d08f059dec0c3c4126dc0ce8fbf029bad442ec7320c54df32b69"
+    },
+    {
+      "path": "ui/guide/clock-header.svg",
+      "sha256": "687b600feb5f22c46098291d1bfc78c452410be5eb2bb65bcbdfe9b99d0da9f8"
+    },
+    {
+      "path": "ui/guide/date-header.svg",
+      "sha256": "46df3f2a9a242addc472cd55449bb2df16ed9fb7e08338e0cb468cfe8a7cea02"
+    },
+    {
+      "path": "ui/guide/guide-bar.svg",
+      "sha256": "598e594a103d9c50cc129eb7d6c63f47608a286b7d37e5cbea4a2a5f33284e9e"
+    },
+    {
+      "path": "ui/guide/guide-dialog.svg",
+      "sha256": "a5e157d46078c4323f4a79abea04084ff5b1d4d01c24363e72172f72f8c64544"
+    },
+    {
+      "path": "ui/guide/guide-frame.svg",
+      "sha256": "bac56069bd8817602a77a3fa7d6b79a4ac87eb0eb14988385d268c213369f583"
+    },
+    {
+      "path": "ui/guide/guide-keycap.svg",
+      "sha256": "7985724b31206fa8848e8c4ab9a4932f94e312dbac0bccbe1924b000026b3b63"
+    },
+    {
+      "path": "ui/guide/guide-mini-banner.svg",
+      "sha256": "71e993c44c27332845d034783d73e3b2caa1faa094eaa7617bc8861e90e92664"
+    },
+    {
+      "path": "ui/guide/guide-number-entry.svg",
+      "sha256": "e69a239e3bd1456eeefb4cf51e271f30cfa7654479c0785493d03e3ea7445040"
+    },
+    {
+      "path": "ui/guide/guide-overlay-lower-third.svg",
+      "sha256": "a1be798a67db0c6b9ef0f47c852a5a42e3e53aeef44d82d19eb0b208740a4987"
+    },
+    {
+      "path": "ui/guide/guide-pip-frame.svg",
+      "sha256": "8129f6c4b72b412c54c0a250ff3fcb42e9f85e9bd98326ef3f0277e92f8a0bb5"
+    },
+    {
+      "path": "ui/guide/guide-remote-button.svg",
+      "sha256": "5cb05c5fe11617bddf3875d5c06435733f8f40e3888be830548c0f1697d67ad8"
+    },
+    {
+      "path": "ui/guide/guide-row.svg",
+      "sha256": "495b7f79695272f39c9acfd634323be8a56296bcb4cf27556139967f6cbafa5b"
+    },
+    {
+      "path": "ui/guide/guide-selection-arrow-left.svg",
+      "sha256": "6a3e6ee4835e9d5be270e7be41816385cdb994ee2ecdfb37e1bd91a7631bcf14"
+    },
+    {
+      "path": "ui/guide/guide-selection-arrow-right.svg",
+      "sha256": "ed1a83788fb759fd8cefb9c0e9cff5175a1e6d7b92806f1a5c9eeffaee483cf7"
+    },
+    {
+      "path": "ui/guide/guide-status-chip.svg",
+      "sha256": "c2c74714c14f1683f39e2030debbe91ee71faf34eef6634554d1dc9b35c9c50e"
+    },
+    {
+      "path": "ui/guide/time-header.svg",
+      "sha256": "687b600feb5f22c46098291d1bfc78c452410be5eb2bb65bcbdfe9b99d0da9f8"
+    },
+    {
+      "path": "ui-manifest.json",
+      "sha256": "d089e35ed39a4403ab83b6bb2880d837ae4003ca9c9d6d995d8ee5d475466041"
+    },
+    {
+      "path": "ui-tokens.json",
+      "sha256": "96db2eaaed91b9e1566033d87b8fa85d6033376c23139b46eb32b0ce4c694945"
+    }
+  ]
+}

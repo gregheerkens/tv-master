@@ -7,7 +7,7 @@ import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlsplit, unquote
 
 from .catalog import connect
 from .scheduler import extend, guide, tune
@@ -41,6 +41,11 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
 
         def do_GET(self):
             target = urlsplit(self.path)
+            if target.path.startswith('/assets/'):
+                root=(static/'assets').resolve();path=(static/unquote(target.path).lstrip('/')).resolve()
+                if not path.is_relative_to(root) or not path.is_file() or path.suffix.lower() not in ('.svg','.png','.ico','.ttf','.woff2','.json','.txt','.md'):
+                    return self.send({'error':'asset not found'},status=404)
+                return self.send(path.read_bytes(),mimetypes.guess_type(path.name)[0] or 'application/octet-stream')
             db = None
             private=target.path.startswith(('/api/research','/api/blocks')) or target.path in ('/api/manager','/research','/research.js','/research.css','/server-manager','/manager.js','/block-editor','/block-editor.js')
             if private and not admin:return self.send({'error':'Server-only tool'},status=404)
@@ -80,8 +85,8 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
                     self.send(manager.dashboard(db,extend(db),standard,query.get('date',[None])[0],int(query.get('days',['3'])[0])))
                 elif re.fullmatch(r'/media/\d+', target.path):
                     self.media(db, int(target.path.rsplit('/',1)[1]))
-                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js'):
-                    names={'/':'index.html','/manager':'control.html','/server-manager':'manager.html','/time-machine':'time-machine.html','/block-party':'time-machine.html','/research':'research.html','/broadcasts':'broadcasts.html','/test-ui':'test-ui.html','/block-editor':'block-editor.html'}
+                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js','/admin-theme.css','/guide-theme.css','/app.webmanifest','/about'):
+                    names={'/':'index.html','/manager':'control.html','/server-manager':'manager.html','/time-machine':'time-machine.html','/block-party':'time-machine.html','/research':'research.html','/broadcasts':'broadcasts.html','/test-ui':'test-ui.html','/block-editor':'block-editor.html','/about':'about.html'}
                     name=names.get(target.path,target.path[1:])
                     path = static / name
                     self.send(path.read_bytes(), mimetypes.guess_type(path)[0] or 'text/plain')

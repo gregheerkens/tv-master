@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="36" viewBox="0 0 540 36" role="img" aria-label="Blank decorative UI asset">
+<defs>
+
+  <linearGradient id="paper" x1="0" y1="0" x2="0.2" y2="1"><stop stop-color="#fff4dd"/><stop offset=".48" stop-color="#f5e9d0"/><stop offset="1" stop-color="#dfcfaf"/></linearGradient>
+  <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fdd64e"/><stop offset=".5" stop-color="#eeb51c"/><stop offset="1" stop-color="#d8900d"/></linearGradient>
+  <linearGradient id="rust" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d9634c"/><stop offset="1" stop-color="#a72c27"/></linearGradient>
+  <linearGradient id="creamBtn" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff8eb"/><stop offset=".8" stop-color="#ecdfc5"/><stop offset="1" stop-color="#d3bd9f"/></linearGradient>
+  <linearGradient id="charcoal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#49362c"/><stop offset=".55" stop-color="#30251f"/><stop offset="1" stop-color="#211916"/></linearGradient>
+  <pattern id="dots" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".42" fill="#5d3d26" opacity=".23"/></pattern>
+  <pattern id="stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(42)"><line x1="0" y1="0" x2="0" y2="8" stroke="#ab9375" stroke-width="2" opacity=".42"/></pattern>
+  <filter id="shadow" x="-15%" y="-35%" width="130%" height="170%"><feGaussianBlur stdDeviation="1.4"/></filter>
+
+</defs>
+<rect x="2" y="3" width="536" height="5" fill="#f4c038"/><rect x="2" y="11" width="536" height="5" fill="#e88125"/><rect x="2" y="19" width="536" height="5" fill="#c94b31"/><rect x="2" y="27" width="536" height="5" fill="#ac3c33"/>
+</svg>

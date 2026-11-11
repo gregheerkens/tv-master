@@ -1,0 +1,23 @@
+{
+  "id": "/",
+  "name": "TV MASTER",
+  "short_name": "TV MASTER",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000064",
+  "theme_color": "#39291f",
+  "icons": [
+    {
+      "src": "/assets/icons/tv-master-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/tv-master-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

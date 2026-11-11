@@ -2,6 +2,11 @@
 
 ## Latest authorized scope
 
+Use the supplied Corrected Branding v2 marks and Textless UI v1 component shells;
+see `docs/BRANDING_INTEGRATION.md`. Keep guide/admin styles separate, values in
+the DOM, original artwork unchanged, and sample/demo strings out of real screens.
+Do not replace the corrected letterforms with a CSS imitation.
+
 The latest user direction is documented in ADR 0007 and 0008. Default startup is
 PIP guide → TV MASTER MANAGER → Time Machine, Channel Surf, Block Party, Manage
 Broadcasts. Viewer frontends never serve file ingestion, ripping, organization or

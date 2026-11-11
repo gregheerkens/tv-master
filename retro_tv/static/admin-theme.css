@@ -1,0 +1,61 @@
+/* Supplied Textless UI v1 shells + corrected Heritage v2 branding.
+   All control labels, health values and choices remain native/live DOM. */
+:root{--paper:#f4e9d3;--ink:#2c221d;--amber:#e7b823;--rust:#bf4631;--orange:#bf4631;--line:#cbb894;--green:#426b40;--red:#a7312d;color-scheme:light}
+body{background:#f4e9d3;color:#2c221d;font-family:Arial,Helvetica,sans-serif}
+header{background:#39291f;color:#fff5df;border-top:8px solid #bf4631;border-bottom:3px solid #e7b823}
+.brand{display:inline-flex;align-items:center;line-height:1;text-decoration:none;letter-spacing:normal;text-shadow:none;-webkit-text-stroke:0}
+.brand img{display:block;width:190px;max-width:100%;height:40px;object-fit:contain}
+.brand-hero{margin:0 0 20px;max-width:665px}
+.brand-hero img{display:block;width:100%;height:auto}
+h1{font-family:Arial,Helvetica,sans-serif;font-weight:800;letter-spacing:-.03em}
+.eyebrow{color:#805125}.intro{color:#5d4c3b}.fine,.refresh-note{opacity:1;color:#645342}
+header .fine,header small{color:#f4e9d3}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #e7b823;outline-offset:4px}
+.tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:30px 0}
+.tile{position:relative;display:grid;grid-template-rows:60.5% 19.3% 20.2%;aspect-ratio:264/248;min-height:0;padding:0;border:0;background:transparent url('/assets/ui/admin/mode-tile.svg') center/100% 100% no-repeat;color:#2c221d;text-align:center;transition:filter .1s}
+.tile:hover{filter:brightness(1.04)}
+.tile .index{position:absolute;top:8%;left:9%;right:9%;font-size:9px;letter-spacing:.12em;text-align:left}
+.tile svg{grid-row:1;justify-self:center;align-self:center;float:none;width:30%;height:55%;margin-top:8%;stroke:#39291f;stroke-width:2}
+.tile h2{grid-row:2;align-self:center;margin:0 8%;font-size:clamp(13px,1.3vw,19px);line-height:1.05;color:#fff5df;white-space:nowrap;font-weight:800}
+.tile p{grid-row:3;align-self:center;margin:0 8%;max-width:none;font-size:12px;line-height:1.2;color:#39291f}
+.panel,.live-panel{background:#f7edd7;border:2px solid #39291f;border-radius:10px;color:#2c221d;box-shadow:3px 4px 0 #d3bd9f}
+.panel>h2,.live-panel>.eyebrow,.section-title h2{color:#fff5df;background:#39291f;border:8px solid transparent;border-image:url('/assets/ui/admin/section-heading.svg') 12 fill / 8px;line-height:1.25;padding:5px 14px;margin:0 0 22px;font-size:19px;letter-spacing:normal}
+.live-panel>.eyebrow{color:#fff5df!important;font-size:14px;font-weight:bold}
+button,.button{min-height:44px;border:0;border-radius:0;background:transparent;border-image:url('/assets/ui/admin/button-primary.svg') 12 fill / 10px;color:#2c221d;font-weight:700;padding:12px 20px;line-height:1.25}
+button.secondary,.button.secondary{color:#2c221d;border-image-source:url('/assets/ui/admin/button-secondary.svg')}
+button.danger{color:#fff5df;border-image-source:url('/assets/ui/admin/button-danger.svg')}
+button:disabled,.button:disabled{color:#6c5c4c;border-image-source:url('/assets/ui/admin/button-disabled.svg');opacity:1}
+input:not([type=checkbox]):not([type=radio]),select,textarea{background:#fff8e9;border:8px solid transparent;border-image:url('/assets/ui/admin/form-input.svg') 12 fill / 8px;border-radius:0;padding:4px 7px;color:#2c221d;min-height:44px;font:inherit}
+select{appearance:auto;padding-right:12px}
+input[type=search]{border-image-source:url('/assets/ui/admin/search-input.svg');padding-left:30px}
+input[type=checkbox],input[type=radio]{appearance:none;width:26px!important;height:26px;min-width:26px;min-height:26px;margin:0;vertical-align:middle;border:0;border-radius:0;background:transparent url('/assets/ui/admin/checkbox-empty.svg') center/contain no-repeat;cursor:pointer;flex:none}
+input[type=checkbox]:checked{background-image:url('/assets/ui/admin/checkbox-checked.svg')}
+input[type=radio]{background-image:url('/assets/ui/admin/radio-empty.svg')}
+input[type=radio]:checked{background-image:url('/assets/ui/admin/radio-selected.svg')}
+input[type=checkbox]:disabled,input[type=radio]:disabled{opacity:.55}
+.meter,.progress{position:relative;height:25px;padding:5px 6px;border:0;border-radius:0;background:transparent;border-image:url('/assets/ui/admin/progress-track.svg') 10 fill / 6px;overflow:hidden}
+.meter>span,.progress>span{height:100%;max-width:100%;min-height:0;border-radius:0;border:0;background:#e7b823 url('/assets/ui/admin/progress-fill.svg') center/100% 100% no-repeat}
+.channel-health,.channel-card{background:#fff4dd;color:#2c221d;border:2px solid #816a50;border-radius:8px;padding:18px}
+.badge{border-radius:7px;border:2px solid #39291f;padding:4px 9px;font-weight:700;font-size:11px;background:#f4e9d3;color:#39291f}
+.badge.ready{background:#3d8548;color:#fff}.badge.partial{background:#e7b823;color:#2c221d}.badge.missing,.badge.offline{background:#ad342d;color:#fff}.badge.substituted{background:#81448d;color:#fff}
+.flag{color:#39291f}.error{color:#922e24}#message,#research-message,#tm-message{background:#fff6df;color:#39291f;border:2px solid #bc8b36;border-radius:5px}
+#message.error,#tm-message.error,#research-message.error{border-color:#bf4631;color:#7c211c}
+footer{border-color:#c4ad86;color:#5d4c3b}.test-banner{background:#e7b823;color:#2c221d}
+/* The older server/selection layouts share shells without becoming TV guide chrome. */
+.sidebar{background:#39291f;border-right:5px solid #bf4631;color:#fff5df}
+.sidebar .brand{display:flex}.sidebar .brand img{width:100%;height:auto;max-height:54px}.sidebar small,.sidebar .fine,.sidebar-bottom{color:#e9d7b4}
+.sidebar~main>header{background:transparent;color:#2c221d;border-top:0;border-bottom:2px solid #c4ad86}
+.sidebar~main>header .eyebrow{color:#805125}.sidebar~main .edition{background:#fff4dd;border-color:#bf4631;color:#39291f}
+.sidebar~main section{border-color:#c4ad86}.sidebar~main .section-title h2{display:inline-block;margin:0;min-width:220px}
+.sidebar~main .brand-hero{margin:0}.theme-chips button{min-height:34px;padding:7px 14px}.theme-chips button.selected{border-image-source:url('/assets/ui/admin/button-primary.svg')}
+.context-list a{background:#fff4dd;border:2px solid #816a50;color:#2c221d}.metric{background:#fff8e9;color:#39291f}
+.about-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,340px);gap:30px;align-items:center}.about-family{width:100%;height:auto;display:block;border:3px solid #39291f}.model-badge{width:min(100%,360px);height:auto}
+@media(max-width:1100px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile h2{font-size:20px}.tile p{font-size:14px}}
+@media(max-width:650px){.tiles{grid-template-columns:1fr;max-width:380px;margin-inline:auto}.tile h2{font-size:20px}.tile p{font-size:14px}.brand img{width:150px;height:32px}header nav{font-size:12px}.about-layout{grid-template-columns:1fr}.about-family{max-width:340px}.panel,.live-panel{padding:20px}}
+@media(prefers-reduced-motion:reduce){.tile{transition:none}}
+@media(forced-colors:active){input[type=checkbox],input[type=radio]{appearance:auto}.meter,.progress,button,.button{border:2px solid ButtonText;border-image:none}.meter>span,.progress>span{background:Highlight}}
+/* Nine-slice the fill so its painted width is exactly the live percentage. */
+.meter>span,.progress>span{background:transparent;border:0;border-image:url('/assets/ui/admin/progress-fill.svg') 5 fill / 2px;clip-path:inset(0)}
+.brand{min-height:44px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #39291f;outline-offset:3px;box-shadow:0 0 0 6px #f5cc33}
+header a:focus-visible,.sidebar a:focus-visible{outline-color:#f5cc33;box-shadow:none}

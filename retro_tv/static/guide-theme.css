@@ -1,0 +1,57 @@
+/* Guide-only layer: native SD geometry, live text and supplied blue bevels. */
+@font-face{font-family:'TV Master Guide';src:url('/assets/fonts/VT323-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+:root{font-family:'TV Master Guide',monospace;color:#e8e9fb;background:#000;font-synthesis:none}
+#tv-stage{background:#000064;image-rendering:pixelated}
+video{image-rendering:auto}
+#guide-shell,#slate,#pip-label{background:#000064}
+#masthead .brand{display:flex;gap:9px;align-items:center;text-decoration:none;color:#e8e9fb}
+#masthead .brand img{width:110px;height:24px;object-fit:contain;display:block}
+#context-label{margin:0;font-size:15px;letter-spacing:0;font-weight:400}
+#clock{font-size:15px;line-height:20px;margin-right:130px;font-weight:400}
+.manager-link{font-size:15px;line-height:16px;padding:2px 5px;color:#ffff2f;top:0;border:1px solid #aab5df;font-weight:400}
+.time-machine-link{font-size:15px;top:21px}
+#program-info .eyebrow{font-size:17.5px;font-weight:400;line-height:18px}
+#selected-status{font-size:15px;font-weight:400}
+#selected-title{font-family:inherit;font-size:25px;line-height:25px;font-weight:400;color:#ffff2f;margin:7px 0 5px}
+#selected-time{font-size:17.5px;line-height:18px;font-weight:400;margin-bottom:6px}
+#selected-description{font-size:17.5px;line-height:18px;max-height:36px}
+#guide-panel{border:3px solid transparent;border-image:url('/assets/ui/guide/guide-frame.svg') 5 fill / 3px;background:#000064}
+#guide-topline{background:transparent;border:2px solid transparent;border-image:url('/assets/ui/guide/date-header.svg') 3 fill / 2px;padding:1px 4px;font-size:16px;font-weight:400;color:#e8e9fb}
+#guide-window{font-size:14px;color:#e8e9fb}
+#time-header{background:#000064;color:#ffff2f;font-weight:400;font-size:20px}
+.channel-heading,#times span{background:transparent;border:2px solid transparent;border-image:url('/assets/ui/guide/time-header.svg') 4 fill / 2px;padding:0 5px;line-height:20px}
+.channel-heading{font-size:15px;color:#e8e9fb}
+.guide-row{border-top:0}
+.channel-cell{display:grid;grid-template-columns:20px minmax(0,1fr);gap:4px;border:2px solid transparent;border-image:url('/assets/ui/guide/channel-default.svg') 5 fill / 2px;padding:1px 4px;color:#ffff2f;background:#000064}
+.channel-cell:focus-visible{border-image-source:url('/assets/ui/guide/channel-focused.svg')}
+.channel-number{font-size:22.5px;color:#ffff2f;font-weight:400}
+.channel-name{font-size:15px;line-height:13px;font-weight:400;max-height:26px;color:#ffff2f;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;word-break:normal;overflow-wrap:anywhere}
+.program-track{background:#000052}
+.program-cell{background:#000052;border:2px solid transparent;border-image:url('/assets/ui/guide/cell-default.svg') 4 fill / 2px;padding:1px 5px;color:#e8e9fb;box-shadow:none}
+.cell-title{font-family:inherit;font-size:20px;line-height:20px;font-weight:400}
+.program-cell.partial{border-left:4px solid #e7b823}.program-cell.missing{border-left:4px solid #f97b7b}.program-cell.offline{border-left:4px solid #d7a1e5}.program-cell.substituted{border-left:4px solid #79d7e2}
+.program-cell.unknown,.program-cell.missing,.program-cell.offline{border-image-source:url('/assets/ui/guide/cell-unavailable.svg');color:#bec5e4}
+.program-cell.focused{border-image-source:url('/assets/ui/guide/cell-focused.svg');color:#fff;padding-left:17px;background:#224bd2}
+.program-cell.focused::before{content:'';position:absolute;left:4px;top:calc(50% - 6px);width:9px;height:12px;background:url('/assets/ui/guide/guide-selection-arrow-right.svg') center/100% 100% no-repeat}
+.program-cell.focused:focus-visible{color:#fff;outline:1px solid #ffff2f;outline-offset:-2px}
+.source-flag,.program-cell.focused .source-flag{color:#ffff2f;font-size:12px;line-height:10px;top:3px;right:3px}
+.mode-full #watch{border:3px solid transparent;border-image:url('/assets/ui/guide/guide-pip-frame.svg') 5 fill / 3px}
+#pip-label{font-size:15px;line-height:15px;padding:2px 4px}
+.remote-hints button{font-family:inherit;font-size:15px;font-weight:400}
+.remote-hints .key{border:2px solid transparent;border-image:url('/assets/ui/guide/guide-keycap.svg') 5 fill / 2px;color:#ffff2f;font-family:inherit;font-size:15px;font-weight:400;line-height:15px;padding:0 3px}
+#legend{font-size:12.5px;line-height:15px}
+#details{font-family:'TV Master Guide',monospace;color:#e8e9fb;background:#000064;border:4px solid transparent;border-image:url('/assets/ui/guide/guide-dialog.svg') 5 fill / 4px;border-radius:0;font-size:20px}
+#details h2{font-size:25px;color:#ffff2f}#details p{font-size:20px;line-height:1.05}
+#details button,#resume{font-family:'TV Master Guide',monospace;font-size:17.5px;color:#fff;border:3px solid transparent;border-image:url('/assets/ui/guide/guide-remote-button.svg') 5 fill / 3px;background:#224bd2;border-radius:0}
+#number-entry{font-family:'TV Master Guide',monospace;font-size:35px;background:#000064;border:3px solid transparent;border-image:url('/assets/ui/guide/guide-number-entry.svg') 5 fill / 3px}
+.mode-mini #guide-shell{background:#000064;border-image:url('/assets/ui/guide/guide-overlay-lower-third.svg') 4 fill / 2px}
+.mode-mini .cell-title{font-size:20px}.mode-mini #guide-topline{padding:0 4px}
+.slate-brand{width:200px;max-width:80%;height:auto}
+#slate h2{font-family:inherit;font-size:25px;font-weight:400}#slate p{font-size:20px;line-height:1.05}
+#watch-hint,#notice{font-family:'TV Master Guide',monospace;font-size:20px}
+@media(forced-colors:active){.program-cell,.channel-cell{border-image:none;border:2px solid ButtonText}.program-cell.focused{background:Highlight;color:HighlightText}}
+#context-label{font-family:'TV Master Guide',monospace;font-weight:400;font-size:17.5px}
+.manager-link{font-size:12.5px;line-height:12px;padding:1px 5px}
+.time-machine-link{top:17px;font-size:15px;line-height:15px}
+.program-cell.partial{--health-color:#e7b823}.program-cell.missing{--health-color:#f97b7b}.program-cell.offline{--health-color:#d7a1e5}.program-cell.substituted{--health-color:#79d7e2}
+.program-cell:is(.partial,.missing,.offline,.substituted)::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--health-color);pointer-events:none}
