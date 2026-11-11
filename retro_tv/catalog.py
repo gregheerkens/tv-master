@@ -15,6 +15,8 @@ def connect(path):
     db.executescript(Path(__file__).with_name('records.sql').read_text())
     db.executescript(Path(__file__).with_name('ingest.sql').read_text())
     db.executescript(Path(__file__).with_name('manager.sql').read_text())
+    db.executescript(Path(__file__).with_name('timelines.sql').read_text())
+    db.executescript(Path(__file__).with_name('recommendations.sql').read_text())
     if db.execute('PRAGMA user_version').fetchone()[0] < 2:
         from .records import backfill
         with db:

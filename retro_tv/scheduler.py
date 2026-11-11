@@ -93,12 +93,14 @@ def compose(db, service, start, state):
     policy = Policy(db)
     assets = {r['id']: dict(r) for r in db.execute(
         'SELECT asset.*,source.path,source.sha256 FROM asset JOIN source ON source.id=asset.source_id')}
+    viewing_mode=db.execute('SELECT mode FROM viewing_mode WHERE id=1').fetchone()
+    use_history=not viewing_mode or viewing_mode[0]!='representative'
     expected=db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms<=? AND end_ms>?',
-                        (service,start,start)).fetchone()
+                        (service,start,start)).fetchone() if use_history else None
     override=db.execute('SELECT * FROM airing_override WHERE airing_id=?',(expected['id'],)).fetchone() if expected else None
-    following=db.execute('SELECT min(start_ms) FROM historical_airing WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0]
+    following=db.execute('SELECT min(start_ms) FROM historical_airing WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0] if use_history else None
     boundary=expected['end_ms'] if expected else min(start+SLOT_MS,following) if following else start+SLOT_MS
-    historical_mode=policy.profiles.get(service,{}).get('mode')=='historical'
+    historical_mode=use_history and policy.profiles.get(service,{}).get('mode')=='historical'
     def identity_matches(program_id,target):
         identity=policy.program_ids.get(program_id);seen=set()
         while identity and identity not in seen:

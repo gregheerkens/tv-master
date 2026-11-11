@@ -158,7 +158,7 @@ class Policy:
         self.blocked={r[0] for r in db.execute('SELECT content_id FROM content_preference WHERE never_schedule=1')}
         self.recordings={r[0] for r in db.execute('SELECT asset_id FROM recording_preference WHERE excluded=1')}
         self.parents=dict(db.execute('SELECT id,parent_id FROM content'))
-        self.tags={r['id']:set(json.loads(r['tags'])) for r in db.execute('SELECT id,tags FROM content')}
+        self.tags={r['id']:{t.casefold() for t in json.loads(r['tags'])} for r in db.execute('SELECT id,tags FROM content')}
         self.windows={}
         for row in db.execute('SELECT * FROM eligibility_window'):
             self.windows.setdefault(row['content_id'],[]).append(dict(row))
@@ -166,6 +166,7 @@ class Policy:
         self.markets=[dict(r) for r in db.execute('SELECT e.service_id,p.market_id,l.valid_from,l.valid_until FROM lineup_entry e JOIN lineup l ON l.id=e.lineup_id JOIN provider p ON p.id=l.provider_id')]
         self.profiles={r['service_id']:dict(r) for r in db.execute('SELECT * FROM channel_profile')}
         self.reuse={r['id']:json.loads(r['metadata']).get('reuse_rule') for r in db.execute('SELECT id,metadata FROM asset')}
+        self.selections={r['service_id']:json.loads(r['rules']) for r in db.execute('SELECT * FROM selection_rule')}
 
     def allowed(self,identifier,service,day,*,program=False):
         if not program and identifier in self.recordings:
@@ -188,10 +189,18 @@ class Policy:
         if program:
             profile=self.profiles.get(service,{})
             if profile.get('mode')=='themed':
-                wanted=set(json.loads(profile['theme_tags']))
+                wanted={t.casefold() for t in json.loads(profile['theme_tags'])}
                 available=set().union(*(self.tags.get(c,set()) for c in visited))
                 if wanted and not wanted.intersection(available):
                     return False
+        rules=self.selections.get(service,{})
+        available=set().union(*(self.tags.get(c,set()) for c in visited))
+        if program:
+            if rules.get('tags') and not set(rules['tags']).intersection(available):return False
+            if set(rules.get('exclude_tags',[])).intersection(available):return False
+            if rules.get('content_ids') and not set(rules['content_ids']).intersection(visited):return False
+            if set(rules.get('exclude_content_ids',[])).intersection(visited):return False
+        elif rules.get('continuity_tags') and not set(rules['continuity_tags']).intersection(available):return False
         return True
 
     def window_matches(self,w,service,day):

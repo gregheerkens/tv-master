@@ -19,7 +19,7 @@
 
 ## Validation performed
 
-- 39 Python tests passed, including a real FFmpeg detection → review → export →
+- 59 Python tests passed, including a real FFmpeg detection → review → export →
   catalog import → physical extraction round trip. The archival fixture remained
   byte-for-byte unchanged.
 - Concurrent writers produced one contiguous, nonoverlapping schedule.
@@ -38,11 +38,25 @@
 
 ## Known gaps and next steps
 
-The user's end-goal clarification is captured in `PRODUCT_MODES.md` and ADR 0005:
-named **Time Machine** (specific historical destinations or representative period
-blocks) and **Channel Surfing** (fixed timeline, lazy media playback). The current
-manager provides preflight foundations, but a distinct Time Machine playback
-session and external historical evidence adapters are not implemented yet.
+**Time Machine now works**: saved WHAT choices, specific or representative period
+destinations, preflight, scoped guide/player, persistent clocks and resume. Filtered
+surfing shares the station clock; default surfing uses the original station.
+Different entry minutes do not reroll that day's schedule. Catalog additions and
+repairs can propagate without rewriting published timelines or copying videos.
+See `USING_TIME_MACHINE.md`, `PRODUCT_MODES.md` and ADR 0006.
+
+Manager standards now distinguish operation, historical recreation and theme
+capacity. Lineup counts/health are mode-based. Exact imported episode gaps group
+by season/range and offer DVD searches; period ad variety shortages offer video
+searches. Unresearched history stays unknown, and owned/offline/excluded recordings
+are distinguished from acquisition needs. Public-source period scraping is still
+not implemented and is required before missing-inventory claims for new periods.
+
+Tests cover context isolation/resume, shared media, same-day order stability,
+concurrent identical launches, DST/lineup validation, metadata synchronization,
+evidence gating, grouped episode recommendations and editable health standards.
+Browser tests cover Time Machine save/preflight/playback/resume and scoped manager
+links, in addition to the classic guide. Physical TV testing remains pending.
 
 The guide/manager update adds a fixed 640×480 / 4:3 TV surface with flat early-
 firmware styling (revised following the user's visual feedback), contextual colors,
@@ -77,8 +91,8 @@ theme matching, inherited series bans, per-copy exclusions, unchanged published
 slots, and idempotent explicit viewing records.
 
 No automatic semantic identification/date research, full catalog/segmentation
-editor, source-specific historical website scraper, acquisition recommendation
-optimizer, campaign optimizer, HLS/IPTV output, native TV APK or enhancement
+editor, source-specific historical website scraper, verified marketplace search,
+campaign optimizer, HLS/IPTV output, native TV APK or enhancement
 worker is implemented. Browser
 playback requires supported codecs and may have a brief transition between files.
 The fixed guide is an application/storage rule, not tamper-proof enforcement

@@ -523,3 +523,76 @@ dialog button {
     display:block
   }
 }
+.health-toolbar {
+  display:flex;
+  gap:25px;
+  align-items:end;
+  margin-bottom:20px
+}
+.health-toolbar label {
+  min-width:230px
+}
+.health-settings {
+  padding:16px 0 24px;
+  border-top:1px solid #c5bda6;
+  margin-bottom:15px
+}
+.health-settings summary {
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:18px
+}
+.health-settings input[type=checkbox] {
+  width:20px;
+  height:20px
+}
+.channel-card>.badge {
+  display:block;
+  width:max-content;
+  margin-bottom:15px
+}
+.badge.unknown,.badge.research_incomplete {
+  background:#e4e3df;
+  color:#666663
+}
+.badge.needs_work {
+  background:#efe0b9;
+  color:#815c21
+}
+.recommendation {
+  background:#faf6e9;
+  border:1px solid #c8bea6;
+  padding:20px;
+  margin:14px 0
+}
+.recommendation>small {
+  font-size:9px;
+  letter-spacing:.1em;
+  color:#8b6a43
+}
+.recommendation h3 {
+  font-size:17px;
+  margin:12px 0
+}
+.recommendation p {
+  font-size:13px;
+  color:#666b5e;
+  line-height:1.6
+}
+.recommendation-actions {
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap
+}
+.recommendation-actions a {
+  font-size:12px;
+  color:#365e50;
+  font-weight:bold
+}
+@media(max-width:700px) {
+  .health-toolbar {
+    flex-direction:column;
+    align-items:stretch
+  }
+}

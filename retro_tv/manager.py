@@ -56,16 +56,45 @@ def inventory(db):
         'alerts':[dict(r) for r in db.execute('SELECT * FROM quality_alert WHERE resolved_at IS NULL')]}
 
 
-def dashboard(db,now):
+def dashboard(db,now,standard_id='channel',requested_date=None,days=3):
+    from .recommendations import get_standard,standards,score
+    standard=get_standard(db,standard_id)
+    if type(days) is not int or not 1<=days<=3:raise ValueError('assess 1, 2 or 3 days')
+    zone=ZoneInfo(db.execute('SELECT timezone FROM state').fetchone()[0])
+    day=requested_date if requested_date and standard['mode']!='channel' else datetime.fromtimestamp(now/1000,zone).date().isoformat()
+    date.fromisoformat(day)
     channels=[]
-    for service in db.execute('SELECT * FROM service ORDER BY name').fetchall():
+    services=db.execute('SELECT * FROM service ORDER BY name').fetchall() if standard['mode']=='theme' else db.execute('''SELECT DISTINCT s.* FROM service s
+      JOIN lineup_entry e ON e.service_id=s.id JOIN lineup l ON l.id=e.lineup_id
+      WHERE l.valid_from<=? AND l.valid_until>? ORDER BY s.name''',(day,day)).fetchall()
+    for service in services:
         health=timeline_health(db,service['id'],now,now+72*3600000)
         totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','slate_ms','missing_file_ms','program_ms','commercial_ms','continuity_ms','quality_alerts')}
-        channels.append({**dict(service),**totals,'blocks':len(health),
+        row={**dict(service),**totals,'blocks':len(health),
             'playable_percent':round(totals['playable_ms']/(72*3600000)*100,1),
-            'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in health.values())})
+            'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in health.values())}
+        profile=db.execute('SELECT theme_tags FROM channel_profile WHERE service_id=?',(service['id'],)).fetchone()
+        result=assess(db,{'service_id':service['id'],'date':day,'days':days,'mode':standard['mode'],
+            'tags':json.loads(profile[0]) if profile else [],'standard_id':standard_id})
+        if standard['mode']=='channel':
+            result['playable_percent']=row['playable_percent']
+            result['repeat_passes_needed']=math.ceil(row['program_ms']/result['unique_program_ms']) if result['unique_program_ms'] else 0
+            result['health']=score(result,standard)
+        row['assessment_health']=result['health'];row['assessed_playable_percent']=result['playable_percent']
+        row['researched_percent']=result['known_schedule_percent']
+        row['assessed_program_ms']=row['program_ms'] if standard['mode']=='channel' else result['program_ms']
+        row['assessed_continuity_ms']=row['commercial_ms']+row['continuity_ms'] if standard['mode']=='channel' else result['commercial_ms']+result['continuity_ms']
+        row['assessed_gap_blocks']=row['gap_blocks'] if standard['mode']=='channel' else len(result['gaps'])
+        channels.append(row)
+    healthy=sum(c['assessment_health']['status']=='ready' for c in channels)
     return {'now_ms':now,'timezone':db.execute('SELECT timezone FROM state').fetchone()[0],
         'channels':channels,'inventory':inventory(db),
+        'health_standard':standard,'health_standards':standards(db),
+        'assessment_date':day,'assessment_days':days,
+        'lineup_health':{'channel_count':len(channels),'healthy_channels':healthy,
+            'unknown_channels':sum(c['assessment_health']['status'] in ('unknown','research_incomplete') for c in channels),
+            'target_channels':standard['settings']['min_healthy_channels'],
+            'meets_target':healthy>=standard['settings']['min_healthy_channels']},
         'historical_airings':db.execute('SELECT count(*) FROM historical_airing').fetchone()[0]}
 
 
@@ -103,12 +132,13 @@ def assess(db,request):
         tags=request.get('tags',[])
         if not isinstance(tags,list) or any(not isinstance(t,str) or not t.strip() for t in tags):raise ValueError('theme tags must be nonempty strings')
         if mode=='theme':
-            if not tags:raise ValueError('enter at least one theme tag')
+            scratch.execute("INSERT INTO viewing_mode VALUES (1,'representative') ON CONFLICT(id) DO UPDATE SET mode=excluded.mode")
             scratch.execute("UPDATE channel_profile SET mode='themed',theme_tags=? WHERE service_id=?",(json.dumps(tags),service))
             # A hypothetical theme does not claim to reproduce a historical lineup.
             scratch.execute('DELETE FROM airing_requirement')
             scratch.execute('DELETE FROM historical_airing')
         elif mode=='historical':
+            scratch.execute("INSERT INTO viewing_mode VALUES (1,'historical') ON CONFLICT(id) DO UPDATE SET mode=excluded.mode")
             scratch.execute("UPDATE channel_profile SET mode='historical' WHERE service_id=?",(service,))
         policy=Policy(scratch)
         programs=scratch.execute('SELECT * FROM program').fetchall()
@@ -135,6 +165,8 @@ def assess(db,request):
             if status.get('status') in ('missing','partial','offline','unknown'):
                 gaps.append({'id':row['id'],'title':row['title'],'start_ms':row['start_ms'],
                     'end_ms':min(row['end_ms'],end),'status':status['status'],'reasons':status['reasons'],
+                    'program_missing':row['program_id'] is None,
+                    'expected_content_id':next((r['content_id'] for r in history if r['start_ms']<=row['start_ms']<r['end_ms']),None),
                     'airing_id':next((r['id'] for r in history if r['start_ms']<=row['start_ms']<r['end_ms']),None)})
         requirements=[]
         for airing in history:
@@ -161,7 +193,7 @@ def assess(db,request):
                 'playable_percent':round(sum(h['playable_ms'] for h in daily_health.values())/(b-a)*100,1),
                 'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in daily_health.values())})
         substituted=sum(h['evidence']=='substituted' for h in health.values())
-        return {'service_id':service,'mode':mode,'date':str(start_date),'days':days,'start_ms':start,'end_ms':end,
+        result={'service_id':service,'mode':mode,'date':str(start_date),'days':days,'start_ms':start,'end_ms':end,
             'simulation_only':True,**totals,'playable_percent':round(totals['playable_ms']/span*100,1),
             'known_schedule_percent':round(known/span*100,1) if mode!='theme' else None,
             'exact_schedule_percent':round(exact/span*100,1) if mode!='theme' else None,
@@ -171,6 +203,10 @@ def assess(db,request):
             'daily':daily,'substituted_blocks':substituted,
             'gaps':gaps,'requirements':requirements,'history':[dict(r) for r in history] if mode!='theme' else [],
             'note':'Analysis only. Finding media affects future composition; published slots stay fixed.'}
+        from .recommendations import get_standard,enrich
+        standard=get_standard(db,request.get('standard_id',mode))
+        if standard['mode']!=mode:raise ValueError('choose a health standard for the assessment mode')
+        return enrich(scratch,result,standard)
     finally:scratch.close()
 
 

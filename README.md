@@ -5,10 +5,10 @@ promos and bumpers become continuous, reproducible broadcasts. The player and
 scheduler have **no dependency on the companion analyzer or an upscaler**.
 
 This is a working first slice, not a finished historical-reconstruction product.
-The end-goal [Time Machine and Channel Surfing modes](docs/PRODUCT_MODES.md) are
-documented separately from the current implementation. Channel Surfing already
-uses fixed timelines with on-demand media playback; the named Time Machine
-destination/session workflow is planned.
+[Time Machine and Channel Surfing](docs/USING_TIME_MACHINE.md) now share the same
+catalog, composer and player. Choose WHAT through saved themes/shows/collections;
+once tuned, its clock, program order and break timing remain fixed. Source-specific
+historical scraping and automatic video identification are still future work.
 The current composer supports date windows, service matching, optional local
 dayparts, ordered acts, whole commercial spots and explicit missing-material
 slates. The original design and handoff are retained in `docs/`.
@@ -162,6 +162,12 @@ text-labeled colors for ready, partial, missing, offline, substituted and unknow
 slots. `/manager` assesses a channel or theme for one to three days, reports media
 and historical-evidence gaps, and lets you locate media or record substitutions.
 See [guide, manager and visual references](docs/GUIDE_AND_MANAGER.md).
+
+Open `/time-machine` (or press T in the guide) for specific-date or representative
+weekday/Saturday destinations, preflight and persistent resume. `/manager` offers
+mode-based lineup health, adjustable standards and evidence-backed acquisition
+recommendations. Search links help the human TV Master find DVDs and era recordings;
+unresearched periods are never turned into invented missing-episode lists.
 
 Preview: [full guide](docs/screenshots/guide-full.png),
 [bottom-third guide](docs/screenshots/guide-mini.png),

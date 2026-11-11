@@ -1,4 +1,7 @@
 const $ = id => document.getElementById(id), video = $('video');
+const contextId=new URLSearchParams(location.search).get('context');
+function scoped(path){return contextId?path+(path.includes('?')?'&':'?')+'context='+encodeURIComponent(contextId):path;}
+if(contextId)document.querySelector('.manager-link').href=scoped('/manager');
 const HALF_HOUR = 1800000, WINDOW = 3 * HALF_HOUR;
 let data, channel, segment, selectedChannel = 0, cursor = 0, windowStart = 0;
 let generation = 0, tuning = false, skew = 0, mode = 'full', futureBrowse = false;
@@ -7,7 +10,7 @@ function sizeStage(){ $('tv-stage').style.transform=`translate(-50%,-50%) scale(
 addEventListener('resize',sizeStage);sizeStage();
 const statuses = {ready:'READY', partial:'PARTIAL / UNFILLED', missing:'CONTENT MISSING', offline:'SOURCE FILE OFFLINE', substituted:'EXPLICIT SUBSTITUTE',unknown:'LISTINGS UNKNOWN'};
 async function api(path) {
-  const response = await fetch(path), value = await response.json();
+  const response = await fetch(scoped(path)), value = await response.json();
   if (!response.ok) throw Error(value.error || response.statusText);
   return value;
 }
@@ -107,12 +110,14 @@ async function refresh() {
     if (previous) selectedChannel = Math.max(0,data.channels.findIndex(c=>c.id===previous));
     if (!futureBrowse) cursor = data.now_ms;
     render();
+    if(data.context)$('context-label').textContent=data.context.mode==='surfing'?'CHANNEL SURFING':'TIME MACHINE';
     if (focused) [...document.querySelectorAll('[data-service]')].find(b=>b.dataset.service===focused)?.focus({preventScroll:true});
     else if (focusGrid) document.querySelector('.program-cell.focused')?.focus({preventScroll:true});
-    if (!channel && data.channels.length) select(data.channels[0].id,false);
+    if (!channel && data.channels.length) select(data.context?.service_id||new URLSearchParams(location.search).get('channel')||data.channels[0].id,false);
   } catch(error) { toast(error.message); }
 }
 async function select(id,closeGuide=true) {
+  if(!data.channels.some(c=>c.id===id)){toast('This channel is not in the active lineup.');return;}
   generation++; channel=id; segment=null; futureBrowse=false; cursor=data.now_ms;
   video.pause();video.removeAttribute('src');video.load();
   const c=data.channels.find(c=>c.id===id); $('playing-channel').textContent=`${c.channel} ${c.name}`;
@@ -130,7 +135,7 @@ async function tune() {
       video.pause();video.removeAttribute('src');video.load();
       slate(s.title,s.reason || 'No eligible media for this broadcast.');
     } else if(changed) {
-      slate('Tuning in…',s.title);video.src=`/media/${s.id}`;
+      slate('Tuning in…',s.title);video.src=scoped(`/media/${s.id}`);
       video.onloadedmetadata=()=>{
         if(gen!==generation)return;
         video.currentTime=(s.offset_ms+Math.max(0,Date.now()+skew-s.now_ms))/1000;
@@ -184,7 +189,11 @@ document.addEventListener('keydown',event=>{
   if(key.toLowerCase()==='i'||key==='Info'){event.preventDefault();details();}
   if(key==='Escape'||key==='Backspace'||key==='BrowserBack'){event.preventDefault();setMode(mode==='full'?'mini':'watch');}
   if(key.toLowerCase()==='f')$('fullscreen').click();
-  if(key.toLowerCase()==='m')location.href='/manager';
+  if(key.toLowerCase()==='m')location.href=scoped('/manager');
+  if(key.toLowerCase()==='t')location.href='/time-machine';
+  if(key==='MediaPlayPause'||key==='MediaPause'||key==='MediaTrackNext'||key==='MediaTrackPrevious'){event.preventDefault();toast('This broadcast keeps its time. Change channels or rejoin live.');}
 });
 setInterval(()=>{if(segment&&Date.now()+skew>=segment.end_ms){segment=null;tune();}if(data)$('clock').textContent=time(Date.now()+skew,true);},500);
 setInterval(tune,10000);setInterval(refresh,30000);refresh();
+
+document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(channel){segment=null;tune();}});

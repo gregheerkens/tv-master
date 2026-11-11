@@ -557,3 +557,5 @@ dialog button:focus {
 #legend .unknown {
   color:#aaaacc
 }
+
+.time-machine-link { position:absolute; right:0; top:17px; font-size:10px; color:#aaaadd; text-decoration:underline; }

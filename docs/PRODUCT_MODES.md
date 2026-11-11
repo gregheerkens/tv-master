@@ -110,13 +110,15 @@ Current implementation:
 | Classic guide, manager, 1–3-day isolated assessments | Working |
 | Dated listing import, catalog matching, known gaps and substitutions | Working through sourced JSON/local records |
 | Theme-tag and date/daypart/season eligibility | Working foundation for representative blocks |
-| Named Time Machine destination/session workflow | Planned; manager assessment is not yet Time Machine playback |
+| Named Time Machine destination/session workflow | Working: preflight, scoped playback and persistent resume |
+| Reusable WHAT selections; rigid clocks/order/breaks | Working; no exposed shuffle/restart/skip controls |
+| Mode-based lineup health and acquisition searches | Working; named missing episodes require imported evidence |
 | Public-source historical scraping/enrichment adapters | Planned |
 | Companion boundary candidates, reviewed import, optional physical cuts | Working baseline |
 | Automatic program/ad/bumper identification and historical dating | Planned; current baseline requires review |
 
-Next independently testable Time Machine slice: select a specific date/time/channel,
-run preflight, create an isolated context from sourced fixture listings, tune at
-the correct act/ad offset, and prove that the surfing station's anchors, published
-order and guide remain unchanged. Follow with representative weekday/Saturday
-templates and a source-specific evidence adapter.
+The first Time Machine slice and representative weekday/Saturday templates are
+implemented and tested; see `USING_TIME_MACHINE.md`. Next: a source-specific period
+research adapter with captured citations and validation against real listings,
+plus physical-TV key testing. Missing-episode claims remain gated by researched
+airings while this adapter is pending.
