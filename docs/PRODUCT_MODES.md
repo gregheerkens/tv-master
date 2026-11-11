@@ -113,12 +113,13 @@ Current implementation:
 | Named Time Machine destination/session workflow | Working: preflight, scoped playback and persistent resume |
 | Reusable WHAT selections; rigid clocks/order/breaks | Working; no exposed shuffle/restart/skip controls |
 | Mode-based lineup health and acquisition searches | Working; named missing episodes require imported evidence |
-| Public-source historical scraping/enrichment adapters | Planned |
+| Period research adapters / source cache / reviewed sideloads | Working for daily wiki tables and Kids Block Blog+ posts; broader sources pending |
 | Companion boundary candidates, reviewed import, optional physical cuts | Working baseline |
 | Automatic program/ad/bumper identification and historical dating | Planned; current baseline requires review |
 
 The first Time Machine slice and representative weekday/Saturday templates are
-implemented and tested; see `USING_TIME_MACHINE.md`. Next: a source-specific period
-research adapter with captured citations and validation against real listings,
-plus physical-TV key testing. Missing-episode claims remain gated by researched
-airings while this adapter is pending.
+implemented and tested; see `USING_TIME_MACHINE.md`. The first source-specific period research adapters now cache and stage listings,
+accept reviewed evidence and support externally collected JSON. See
+`PERIOD_RESEARCH.md` for the real sideload example and parser limits. Next: broader
+source validation and physical-TV key testing. Missing-episode claims remain gated
+by accepted researched airings.

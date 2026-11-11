@@ -14,6 +14,7 @@ from .scheduler import extend, guide, tune
 from . import manager
 from . import timelines
 from . import recommendations
+from . import research
 from .health import resolve_path
 
 
@@ -40,7 +41,7 @@ def serve(database, host='127.0.0.1', port=8787):
             db = None
             try:
                 context=parse_qs(target.query).get('context',[''])[0]
-                global_route=target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard'
+                global_route=target.path.startswith('/api/research') or target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard'
                 if context and target.path in ('/api/guide','/api/manager'):
                     timelines.sync_catalog(database,context)
                 db=connect(timelines.context_path(database,context) if context and not global_route else database)
@@ -48,6 +49,10 @@ def serve(database, host='127.0.0.1', port=8787):
                     result=guide(db,extend(db))
                     if context:result['context']=timelines.context_info(database,context)
                     self.send(result)
+                elif target.path=='/api/research':
+                    self.send(research.overview(db))
+                elif target.path=='/api/research/export':
+                    self.send(research.export_bundle(db,parse_qs(target.query).get('batch',[''])[0]))
                 elif target.path=='/api/time-machine/options':
                     self.send(timelines.options(db))
                 elif target.path == '/api/tune':
@@ -58,8 +63,8 @@ def serve(database, host='127.0.0.1', port=8787):
                     self.send(manager.dashboard(db,extend(db),standard,query.get('date',[None])[0],int(query.get('days',['3'])[0])))
                 elif re.fullmatch(r'/media/\d+', target.path):
                     self.media(db, int(target.path.rsplit('/',1)[1]))
-                elif target.path in ('/', '/app.js', '/style.css','/manager','/manager.js','/manager.css','/time-machine','/time-machine.js','/time-machine.css'):
-                    name='index.html' if target.path=='/' else 'manager.html' if target.path=='/manager' else 'time-machine.html' if target.path=='/time-machine' else target.path[1:]
+                elif target.path in ('/', '/app.js', '/style.css','/manager','/manager.js','/manager.css','/time-machine','/time-machine.js','/time-machine.css','/research','/research.js','/research.css'):
+                    name='index.html' if target.path=='/' else 'manager.html' if target.path=='/manager' else 'time-machine.html' if target.path=='/time-machine' else 'research.html' if target.path=='/research' else target.path[1:]
                     path = static / name
                     self.send(path.read_bytes(), mimetypes.guess_type(path)[0] or 'text/plain')
                 else:
@@ -81,15 +86,18 @@ def serve(database, host='127.0.0.1', port=8787):
             db=None
             try:
                 context=parse_qs(target.query).get('context',[''])[0]
-                global_route=target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard'
+                global_route=target.path.startswith('/api/research') or target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard'
                 db=connect(timelines.context_path(database,context) if context and not global_route else database)
                 size=int(self.headers.get('Content-Length','0'))
                 if not 0<size<=2*1024*1024:raise ValueError('JSON body must be between 1 byte and 2 MB')
                 value=json.loads(self.rfile.read(size))
+                if not isinstance(value,dict):raise ValueError('JSON requests must be objects')
                 routes={'/api/manager/assess':manager.assess,'/api/manager/attach':manager.attach_media,
                         '/api/manager/repair':manager.repair_source,'/api/manager/override':manager.set_override,
                         '/api/time-machine/recipe':timelines.save_recipe,
-                        '/api/manager/health-standard':recommendations.save_standard}
+                        '/api/manager/health-standard':recommendations.save_standard,
+                        '/api/research/create':research.create_batch,'/api/research/fetch':research.fetch_page,
+                        '/api/research/sideload':research.sideload,'/api/research/accept':research.accept}
                 if target.path=='/api/time-machine/preflight':self.send(timelines.preflight(database,value))
                 elif target.path=='/api/time-machine/launch':self.send(timelines.launch(database,value))
                 elif target.path=='/api/manager/import-plan':

@@ -16,7 +16,7 @@ material; they do not set an episode order, remove break time or expose a seed.
   the first matching weekday in that month. The resolved date is shown at preflight.
 - **Sourced historical broadcast:** choose a specific date/time. The configured
   dated lineup and imported airings constrain the result. Unknown history remains
-  unknown. This release does not scrape public listings automatically.
+  unknown. Use the research desk to collect/review supported daily pages or sideload researched JSON.
 - **Channel Surfing:** use the existing station clock. No date/time controls.
   An unfiltered choice returns to the original station; a filtered selection gets
   a persistent variant on the same clock.
@@ -82,8 +82,9 @@ Acquisition recommendations:
 
 All external actions are **search links**, not verified listings, purchases or
 identified tapes. Verify recordings and their date context when importing them.
-Automatic period pre-scraping and semantic video recognition remain separate
-adapter/companion work; the app does not pretend those exist.
+Period pre-collection now works through supported daily-page adapters, saved HTML
+and reviewed JSON sideloads; see `PERIOD_RESEARCH.md`. Universal source discovery
+and semantic video recognition remain separate work.
 
 The companion's current black/silence boundary detector, review/export and optional
 physical cuts remain usable independently. A well-divided library bypasses it.

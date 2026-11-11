@@ -20,7 +20,7 @@ async function load(){
     for(const input of document.querySelectorAll('[data-standard]')){const value=dashboard.health_standard.settings[input.dataset.standard];if(input.type==='checkbox')input.checked=value;else input.value=value;input.disabled=['min_history_percent','min_exact_percent'].includes(input.dataset.standard)&&dashboard.health_standard.mode!=='historical';}
     $('health-standard-form').dataset.ready='true';$('health-standard-form').dataset.view=dashboard.health_standard.id;$('health-standard-form').querySelector('button').disabled=false;
     $('health-scope').textContent=dashboard.health_standard.mode==='channel'?'LIVE · NEXT 72 HOURS':`ASSESSMENT · ${dashboard.assessment_date} · ${dashboard.assessment_days} DAYS`;
-    const lineup=dashboard.lineup_health;$('lineup-summary').textContent=`${lineup.healthy_channels} of ${lineup.channel_count} channels meet this standard · ${lineup.unknown_channels} need more research · target: ${lineup.target_channels} healthy channels`;
+    const lineup=dashboard.lineup_health;$('lineup-summary').textContent=`${lineup.healthy_channels} of ${lineup.channel_count} channels meet this standard · ${lineup.unknown_channels} need more research · target: ${lineup.target_channels} healthy channels`;if(!lineup.channel_count&&dashboard.health_standard.mode==='historical')$('lineup-summary').textContent='No dated lineup is established for this period. Individual service listings can still be assessed below.';
     $('channel-health').replaceChildren();
     for(const c of dashboard.channels){
       const card=node('article',undefined,`channel-card ${c.playable_percent<20?'bad':c.playable_percent<99?'warn':''}`);

@@ -157,7 +157,7 @@ def assess(db,request):
         health=timeline_health(scratch,service,start,end)
         totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','program_ms','commercial_ms','continuity_ms','slate_ms','missing_file_ms')}
         history=[] if mode=='theme' else db.execute('SELECT * FROM historical_airing WHERE service_id=? AND start_ms<? AND end_ms>? ORDER BY start_ms',(service,end,start)).fetchall()
-        known=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history)
+        known=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history if r['evidence_state'] in ('exact','schedule_exact'))
         exact=sum(min(end,r['end_ms'])-max(start,r['start_ms']) for r in history if r['evidence_state']=='exact')
         gaps=[]
         for row in scratch.execute('SELECT * FROM broadcast WHERE service_id=? AND start_ms<? ORDER BY start_ms',(service,end)):

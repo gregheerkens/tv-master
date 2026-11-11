@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "services": [{"id": "nickelodeon", "name": "Nickelodeon (US Eastern feed)"}],
+  "channels": [{"service_id": "nickelodeon", "mode": "historical", "theme_tags": []}]
+}

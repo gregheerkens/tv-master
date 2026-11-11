@@ -39,6 +39,9 @@ def import_records(db, document):
         raise ValueError('records version must be 1')
     with db:
         backfill(db)
+        for item in document.get('services',[]):
+            if not item.get('id') or not item.get('name'):raise ValueError('services need an ID and name')
+            db.execute('INSERT INTO service VALUES (?,?)',(item['id'],item['name']))
         for item in document.get('contents',[]):
             original=item.get('original_air_date')
             if original:

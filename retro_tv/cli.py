@@ -26,6 +26,9 @@ def main():
     metadata.add_argument('manifest', type=Path)
     plan=sub.add_parser('import-plan',help='Import sourced historical airings and known continuity requirements')
     plan.add_argument('manifest',type=Path)
+    research=sub.add_parser('research',help='Stage daily historical listings; review before accepting')
+    research.add_argument('action',choices=['create','fetch','sideload','accept','list','export'])
+    research.add_argument('input',nargs='?',help='JSON request file, or batch ID for export')
     assessment=sub.add_parser('assess',help='Analyze a separate scratch plan without changing live TV')
     assessment.add_argument('--service',required=True);assessment.add_argument('--date',required=True)
     assessment.add_argument('--days',type=int,choices=[1,2,3],default=1)
@@ -84,6 +87,15 @@ def main():
                 from .manager import import_plan
                 import_plan(db,json.loads(args.manifest.read_text()))
                 print('Historical listings imported; published programming is unchanged.')
+            elif args.command == 'research':
+                from . import research
+                if args.action=='list':result=research.overview(db)
+                elif args.action=='export':result=research.export_bundle(db,args.input)
+                else:
+                    value=json.loads(Path(args.input).read_text())
+                    action={'create':research.create_batch,'fetch':research.fetch_page,'sideload':research.sideload,'accept':research.accept}[args.action]
+                    result=action(db,value)
+                print(json.dumps(result,indent=2))
             elif args.command == 'assess':
                 from .manager import assess
                 print(json.dumps(assess(db,{'service_id':args.service,'date':args.date,'days':args.days,

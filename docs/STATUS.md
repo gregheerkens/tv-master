@@ -19,7 +19,7 @@
 
 ## Validation performed
 
-- 59 Python tests passed, including a real FFmpeg detection → review → export →
+- 68 Python tests passed, including a real FFmpeg detection → review → export →
   catalog import → physical extraction round trip. The archival fixture remained
   byte-for-byte unchanged.
 - Concurrent writers produced one contiguous, nonoverlapping schedule.
@@ -34,6 +34,9 @@
   responses and invalid-range rejection.
 - Companion HTTP checks passed for queued analysis, persisted pending review and
   rejecting source paths outside the configured media root.
+- Research tests cover cached staging, partial acceptance, rowspans, midnight/DST,
+  failed fetches, conflicts/rollback, exact-episode gating and the real 43-slot
+  sideload. Chromium also verified research review, accepted subsets and JSON export.
 - Python compile checks and JavaScript syntax checks passed.
 
 ## Known gaps and next steps
@@ -49,8 +52,10 @@ Manager standards now distinguish operation, historical recreation and theme
 capacity. Lineup counts/health are mode-based. Exact imported episode gaps group
 by season/range and offer DVD searches; period ad variety shortages offer video
 searches. Unresearched history stays unknown, and owned/offline/excluded recordings
-are distinguished from acquisition needs. Public-source period scraping is still
-not implemented and is required before missing-inventory claims for new periods.
+are distinguished from acquisition needs. Period research now supports daily wiki tables, The Kids Block Blog+ posts, saved
+HTML and portable JSON sideloads, with cached sources, review and transactional
+acceptance. See `PERIOD_RESEARCH.md`. A real July 4, 1995 listing is included as
+secondary-source data; unknown hours and episode uncertainty remain explicit.
 
 Tests cover context isolation/resume, shared media, same-day order stability,
 concurrent identical launches, DST/lineup validation, metadata synchronization,
@@ -91,7 +96,7 @@ theme matching, inherited series bans, per-copy exclusions, unchanged published
 slots, and idempotent explicit viewing records.
 
 No automatic semantic identification/date research, full catalog/segmentation
-editor, source-specific historical website scraper, verified marketplace search,
+editor, universal historical website/PDF scraper, verified marketplace search,
 campaign optimizer, HLS/IPTV output, native TV APK or enhancement
 worker is implemented. Browser
 playback requires supported codecs and may have a brief transition between files.
@@ -99,7 +104,7 @@ The fixed guide is an application/storage rule, not tamper-proof enforcement
 against the owner of the server.
 
 Next narrow milestones: validate one sourced historical block against owned media
-and test key delivery on a physical TV/browser or wrapper; then add source-specific
+and test key delivery on a physical TV/browser or wrapper; then broaden source-specific
 history adapters and reference-backed companion identification. Keep the prepared-
 library path and immutable-guide tests passing throughout.
 

@@ -8,7 +8,8 @@ This is a working first slice, not a finished historical-reconstruction product.
 [Time Machine and Channel Surfing](docs/USING_TIME_MACHINE.md) now share the same
 catalog, composer and player. Choose WHAT through saved themes/shows/collections;
 once tuned, its clock, program order and break timing remain fixed. Source-specific
-historical scraping and automatic video identification are still future work.
+period research supports daily-page adapters and reviewed JSON sideloads; automatic
+video identification remains future work. See [period research](docs/PERIOD_RESEARCH.md).
 The current composer supports date windows, service matching, optional local
 dayparts, ordered acts, whole commercial spots and explicit missing-material
 slates. The original design and handoff are retained in `docs/`.
@@ -133,7 +134,7 @@ The first delivery adapter is a browser player, not an HLS/IPTV server or TV APK
 The manager includes analysis, file linking/repair and explicit substitutions;
 there is no full catalog/segmentation editor yet. The composer uses simple
 deterministic rotation with immediate-repeat avoidance, not a full campaign-
-frequency optimizer or automatic historical listings scraper. Breaks must be
+frequency optimizer or universal historical listings scraper. Breaks must be
 provided manually as ordered program parts. It does not fabricate missing episode
 identity, guaranteed rerun brackets or local station history.
 
@@ -173,3 +174,9 @@ Preview: [full guide](docs/screenshots/guide-full.png),
 [bottom-third guide](docs/screenshots/guide-mini.png),
 [station manager](docs/screenshots/manager.png). Screenshots use generated test
 patterns and a fictional lineup; they contain no actual broadcast footage.
+
+Research desk: open `/research` to collect dated listings, use saved HTML, or
+sideload researched JSON. Review the source before accepting it. The included
+[real July 4, 1995 example](examples/research/nickelodeon-1995-07-04.json) establishes
+program-level evidence with unknown hours retained; see the
+[workflow and local screenshot capture](docs/PERIOD_RESEARCH.md).
