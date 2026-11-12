@@ -16,6 +16,7 @@ from .scheduler import extend, tune, wall_ms
 from .health import timeline_health
 
 RULE_KEYS=('tags','exclude_tags','content_ids','exclude_content_ids','continuity_tags')
+BUILDER_KEYS=('years','months','networks','block_minutes','include_commercials','include_bumpers')
 TEMPLATES={
     'saturday_morning':{'label':'Saturday morning','weekday':5,'time':'08:00'},
     'weekday_afternoon':{'label':'Weekday afternoon','weekday':1,'time':'16:30'},
@@ -24,7 +25,7 @@ TEMPLATES={
 
 
 def normalize_rules(value,db):
-    if not isinstance(value,dict) or set(value)-set(RULE_KEYS):
+    if not isinstance(value,dict) or set(value)-set(RULE_KEYS+BUILDER_KEYS):
         raise ValueError('unsupported selection rule; timing and playback controls are not customizable')
     result={}
     for key in RULE_KEYS:
@@ -32,6 +33,22 @@ def normalize_rules(value,db):
         if not isinstance(values,list) or len(values)>200 or any(not isinstance(v,str) or not v.strip() for v in values):
             raise ValueError(f'{key} must be a list of nonempty strings')
         result[key]=sorted(set(v.strip().casefold() if key in ('tags','exclude_tags','continuity_tags') else v.strip() for v in values))
+    if any(key in value for key in BUILDER_KEYS):
+        from .block_party import DURATIONS
+        duration=value.get('block_minutes',30)
+        if type(duration) is not int or duration not in DURATIONS:raise ValueError('Block duration must be 15, 30, 60 or 90 minutes')
+        result['block_minutes']=duration
+        for key in ('include_commercials','include_bumpers'):
+            flag=value.get(key,True)
+            if type(flag) is not bool:raise ValueError(f'{key} must be a boolean')
+            result[key]=flag
+        for key,low,high in (('years',1,9999),('months',1,12)):
+            values=value.get(key,[])
+            if not isinstance(values,list) or len(values)>200 or any(type(v) is not int or not low<=v<=high for v in values):raise ValueError(f'invalid {key} selection')
+            result[key]=sorted(set(values))
+        values=value.get('networks',[])
+        if not isinstance(values,list) or len(values)>200 or any(not isinstance(v,str) or not v.strip() for v in values):raise ValueError('invalid network selection')
+        result['networks']=sorted(set(v.strip().casefold() for v in values))
     for ident in result['content_ids']+result['exclude_content_ids']:
         if not db.execute('SELECT 1 FROM content WHERE id=?',(ident,)).fetchone():raise ValueError('unknown content selection')
     return result
@@ -83,6 +100,7 @@ def normalize_request(db,value):
         service=recipe['service_id'];rules=json.loads(recipe['rules'])
     if not db.execute('SELECT 1 FROM service WHERE id=?',(service,)).fetchone():raise ValueError('choose a known channel')
     result={'mode':mode,'service_id':service,'rules':normalize_rules(rules,db)}
+    if 'block_minutes' in result['rules'] and mode!='representative':raise ValueError('Custom block rules belong to Block Party')
     layout=broadcasts.active(db)
     if layout:result['layout_id']=layout['id']
     if service not in broadcasts.service_ids(db):raise ValueError('That channel is outside your broadcast setup')
@@ -109,6 +127,7 @@ def selection_name(db,request):
         (request['service_id'],json.dumps(request['rules'],sort_keys=True))).fetchone()
     if saved:return saved['name']
     channel=db.execute('SELECT name FROM service WHERE id=?',(request['service_id'],)).fetchone()[0]
+    if request['rules'].get('block_minutes'):return channel+' / '+str(request['rules']['block_minutes'])+' min block'
     if request['rules']['tags']:return channel+' / '+', '.join(request['rules']['tags'])
     if request['rules']['content_ids']:
         titles=[db.execute('SELECT title FROM content WHERE id=?',(ident,)).fetchone()[0] for ident in request['rules']['content_ids'][:2]]
@@ -121,7 +140,8 @@ def options(db):
     if not state:raise ValueError('initialize the station first')
     tags=set()
     for row in db.execute('SELECT tags FROM content'):tags.update(t.casefold() for t in json.loads(row[0]))
-    return {'timezone':broadcasts.timezone(db),'default_destination':datetime.fromtimestamp(state['historical_anchor_ms']/1000,ZoneInfo(broadcasts.timezone(db))).isoformat(),
+    from .block_party import options as block_options
+    return {'block_facets':block_options(db),'block_durations':[15,30,60,90],'timezone':broadcasts.timezone(db),'default_destination':datetime.fromtimestamp(state['historical_anchor_ms']/1000,ZoneInfo(broadcasts.timezone(db))).isoformat(),
         'channels':[dict(r) for r in db.execute('SELECT id,name FROM service ORDER BY name') if r['id'] in broadcasts.service_ids(db)],
         'tags':sorted(tags),'collections':[dict(r) for r in db.execute("""SELECT DISTINCT c.id,c.title,c.kind FROM content c
             LEFT JOIN program_content p ON p.content_id=c.id WHERE c.kind='series' OR
@@ -201,7 +221,7 @@ def summary(db,request,now):
     block=db.execute('SELECT known_points FROM complete_block WHERE service_id=? AND start_ms<=? AND end_ms>?',(service,now,now)).fetchone()
     points=json.loads(block[0]) if block else []
     return {'mode':request['mode'],'service_id':service,'timezone':broadcasts.timezone(db),'now_ms':now,'episode_title':listed[0] if listed else None,'block_anchor_title':points[0].get('title') if points else None,
-        'destination':request.get('destination'),'current_title':slots['title'],
+        'block_minutes':request['rules'].get('block_minutes'),'destination':request.get('destination'),'current_title':slots['title'],
         'current_segment':playing['title'],'current_kind':playing['kind'],'current_offset_ms':playing['offset_ms'],
         'current_status':health[slots['id']]['status'],'playable_percent':round(playable/(72*3600000)*100,1),
         'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in health.values()),

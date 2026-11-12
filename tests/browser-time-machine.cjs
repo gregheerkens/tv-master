@@ -9,7 +9,7 @@ const assert=require('node:assert/strict');
     await page.goto(base+'/block-party');
     await page.waitForFunction(()=>document.getElementById('tm-service').options.length>0);
     await page.selectOption('#tm-service','kids');await page.selectOption('#tm-template','saturday_morning');
-    await page.fill('#tm-tags','cartoon');await page.fill('#tm-name','Saturday cartoon selection');
+    await page.click('[data-facet=tags][data-value=cartoon]');await page.fill('#tm-name','Saturday cartoon selection');
     await page.click('#tm-save');await page.waitForFunction(()=>document.getElementById('tm-message').textContent.startsWith('Saved'));
     await page.click('#tm-check');await page.waitForSelector('#tm-preflight:not([hidden])');
     assert.match(await page.locator('#tm-verdict').innerText(),/Test Pattern/);

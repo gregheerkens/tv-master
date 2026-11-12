@@ -12,6 +12,9 @@ not a promise of exact historical coverage for an arbitrary library or location.
   rolling 72-hour guide. Catalog changes never rewrite published programming.
 - Time Machine preflight, specific/representative destinations, saved WHAT rules,
   separate persistent contexts and resume. Filtered surfing shares station time.
+- Block Party library-derived multi-select themes/year/month/network cloud, fixed
+  15/30/60/90-minute block boundaries, independent commercials/bumpers switches
+  and saved builder rules. Whole programs fit without truncation (ADR 0009).
 - PIP, bottom-third and TV-only modes on a 640×480 guide, remote-style keyboard
   navigation, numeric tuning, details and browser fullscreen.
 - Four-mode viewer manager, saved region/provider/tier/channel layouts, live
@@ -46,6 +49,10 @@ Browser tests use synthetic media and fixtures. These checks do not establish
 physical-TV compatibility or validate real Internet Archive broadcast footage.
 See `tests/` for the executable checks. Runtime galleries are local outputs; there
 are no current screenshot fixtures in `docs/`.
+
+The Block Party builder revision passed 87 Python tests and the builder, Time
+Machine and branding browser checks. New coverage exercises facet matching,
+whole-program boundaries, continuity switches, saved rules and immutable resume.
 
 ## Remaining limitations
 

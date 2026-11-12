@@ -111,3 +111,25 @@ The viewer now enters Time Machine and Block Party through separate manager
 buttons; representative templates live in Block Party. Content/research tools
 have moved to the server console. See `BROADCAST_SETUP.md` and `COMPLETE_BLOCKS.md`
 for active reception layouts and intact local/remote source recordings.
+
+## Block Party custom builder
+
+Open `/block-party` for the multi-select cloud. Choose any number of themes,
+years, months and networks, or leave all blank. Two selections in one group allow
+either; groups combine together. Search narrows the visible cloud without clearing
+selected tags; **Clear all tags** clears the facet selections.
+
+The cloud comes from program metadata and inherited series tags, original-air dates,
+approved availability periods and network records/metadata. Undated programs can
+contribute bounded availability years (up to a 30-year interval); generic open-ended
+ranges do not produce hundreds of year chips. `network:fox`, `year:1995` and
+`month:7` tags are also recognized. These are library filters, not claims of exact
+historical airings. Normal period/channel eligibility still applies.
+
+Choose **15, 30, 60 or 90 minutes**, and independently enable **Commercials** and
+**Bumpers and station continuity**. A block can hold multiple whole programs.
+Programs are never truncated to meet its boundary; insufficient fitting material
+appears as a real gap in preflight/health. Turning continuity off joins program acts
+without inserted spots. Duration and continuity choices are saved with the selection;
+returning resumes its fixed timeline. Anchored intact recordings are kept outside
+this custom-recipe composition path. See ADR 0009.

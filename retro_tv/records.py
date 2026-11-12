@@ -175,6 +175,9 @@ class Policy:
         self.profiles={r['service_id']:dict(r) for r in db.execute('SELECT * FROM channel_profile')}
         self.reuse={r['id']:json.loads(r['metadata']).get('reuse_rule') for r in db.execute('SELECT id,metadata FROM asset')}
         self.selections={r['service_id']:json.loads(r['rules']) for r in db.execute('SELECT * FROM selection_rule')}
+        from .block_party import metadata_facets
+        self.block_facets=metadata_facets(db) if any('block_minutes' in r for r in self.selections.values()) else {}
+        self.asset_kinds=dict(db.execute('SELECT id,kind FROM asset'))
 
     def allowed(self,identifier,service,day,*,program=False):
         if not program and identifier in self.recordings:
@@ -204,11 +207,14 @@ class Policy:
         rules=self.selections.get(service,{})
         available=set().union(*(self.tags.get(c,set()) for c in visited))
         if program:
+            from .block_party import matches
+            if 'block_minutes' in rules and not matches(self.block_facets.get(identifier,{'years':set(),'months':set(),'networks':set()}),rules):return False
             if rules.get('tags') and not set(rules['tags']).intersection(available):return False
             if set(rules.get('exclude_tags',[])).intersection(available):return False
             if rules.get('content_ids') and not set(rules['content_ids']).intersection(visited):return False
             if set(rules.get('exclude_content_ids',[])).intersection(visited):return False
-        elif rules.get('continuity_tags') and not set(rules['continuity_tags']).intersection(available):return False
+        elif self.asset_kinds.get(identifier)!='program' and ((not rules.get('include_commercials',True) and self.asset_kinds.get(identifier)=='commercial') or (not rules.get('include_bumpers',True) and self.asset_kinds.get(identifier) not in ('program','commercial'))):return False
+        elif self.asset_kinds.get(identifier)!='program' and rules.get('continuity_tags') and not set(rules['continuity_tags']).intersection(available):return False
         return True
 
     def window_matches(self,w,service,day):

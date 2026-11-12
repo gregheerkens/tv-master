@@ -91,7 +91,11 @@ def compose(db, service, start, state):
     Date eligibility covers the entire block, including a local midnight crossing.
     Source paths, hashes, offsets and display titles are snapshotted for playout.
     """
-    if blocks.compose(db,service,start,state):return
+    selection=db.execute('SELECT rules FROM selection_rule WHERE service_id=?',(service,)).fetchone()
+    builder=json.loads(selection[0]) if selection else {}
+    block_ms=builder.get('block_minutes',0)*60000
+    block_end=(state['historical_anchor_ms']+((start-state['historical_anchor_ms'])//block_ms+1)*block_ms) if block_ms else None
+    if not block_ms and blocks.compose(db,service,start,state):return
     zone = ZoneInfo(broadcasts.timezone(db))
     day = datetime.fromtimestamp(start/1000, zone).date().isoformat()
     policy = Policy(db)
@@ -104,9 +108,11 @@ def compose(db, service, start, state):
     override=db.execute('SELECT * FROM airing_override WHERE airing_id=?',(expected['id'],)).fetchone() if expected else None
     following=db.execute('SELECT min(start_ms) FROM historical_airing WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0] if use_history else None
     next_block=db.execute('SELECT min(start_ms) FROM complete_block WHERE service_id=? AND start_ms>?',(service,start)).fetchone()[0]
+    if block_ms:next_block=None
     if next_block:following=min(following,next_block) if following else next_block
     boundary=expected['end_ms'] if expected else min(start+SLOT_MS,following) if following else start+SLOT_MS
     if next_block:boundary=min(boundary,next_block)
+    if block_ms:boundary=block_end
     historical_mode=use_history and policy.profiles.get(service,{}).get('mode')=='historical'
     def identity_matches(program_id,target):
         identity=policy.program_ids.get(program_id);seen=set()
@@ -130,6 +136,10 @@ def compose(db, service, start, state):
             continue
         duration = sum(p['out_ms']-p['in_ms'] for p in parts)
         length = expected['end_ms']-start if expected else max(SLOT_MS, math.ceil(duration/SLOT_MS)*SLOT_MS)
+        if block_ms:
+            continuity=builder.get('include_commercials',True) or builder.get('include_bumpers',True)
+            length=math.ceil(duration/(15*60000))*(15*60000) if continuity else duration
+            if start+length>block_end:continue
         if duration>length or (following and start+length>following):continue
         if length > 12 * 60 * 60 * 1000:
             continue
