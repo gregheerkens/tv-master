@@ -3,7 +3,7 @@
 ## Current sources of truth
 
 Read `README.md`, `docs/STATUS.md` and the relevant workflow guide from
-`docs/README.md`. Accepted decisions are in `docs/adr/` (0001–0010). The original
+`docs/README.md`. Accepted decisions are in `docs/adr/` (0001–0011). The original
 canon and conversation handoff are in `docs/archive/` for historical context;
 they do not override later user direction, delivered stack choices or ADRs.
 `docs/DEVELOPMENT_ROADMAP.md` lists remaining work, not completed milestones.

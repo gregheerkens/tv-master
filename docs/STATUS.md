@@ -61,6 +61,11 @@ The editable-playlist revision passed 89 Python tests and the playlist workflow,
 Block Party builder and Time Machine browser checks. Draft revisions, JSON
 validation, ordered playback and independence of published copies are covered.
 
+Calendar destinations now offer specific date/time, date-at-midnight and Today
+in a selected year using the broadcast timezone. Today contexts resume per day;
+preflight pins the resolved moment. This revision passed 93 Python tests and the
+destination, Time Machine, Block Party and playlist browser checks.
+
 ## Remaining limitations
 
 - No native TV APK, physical-TV remote verification or HLS/IPTV/transcoding adapter.

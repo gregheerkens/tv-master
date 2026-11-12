@@ -76,7 +76,7 @@ def generate(db,value):
               WHERE b.service_id=? AND s.start_ms>=? AND s.start_ms<? ORDER BY s.start_ms''',(request['service_id'],begin,begin+span)):
             items.append({'asset_id':row['asset_id']} if row['asset_id'] else {'gap_ms':row['end_ms']-row['start_ms']})
         return save(db,{'document':{'version':1,'name':old['name']+' (regenerated)' if old else value.get('name') or 'New block',
-                    'duration_minutes':duration,'selection':selection,'items':items}})
+                    'duration_minutes':duration,'selection':{k:v for k,v in request.items() if k not in ('layout_id','playlist')},'items':items}})
     finally:scratch.close()
 
 

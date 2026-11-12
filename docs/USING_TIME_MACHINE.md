@@ -11,10 +11,10 @@ and optionally narrow the commercial/bumper collection. Save that selection with
 a name and reuse it at another destination. These controls choose the eligible
 material; they do not set an episode order, remove break time or expose a seed.
 
-- **Plausible period television:** choose a specific date/time, or a Saturday
-  morning, weekday afternoon or late-night template by year/month. Templates use
-  the first matching weekday in that month. The resolved date is shown at preflight.
-- **Sourced historical broadcast:** choose a specific date/time. The configured
+- **Block Party / plausible period television:** choose the custom block settings
+  and a destination below. Older weekday/daypart templates remain API-compatible
+  for saved selections but are no longer offered in the destination dropdown.
+- **Sourced historical broadcast:** choose a destination below. The configured
   dated lineup and imported airings constrain the result. Unknown history remains
   unknown. Use the research desk to collect/review supported daily pages or sideload researched JSON.
 - **Channel Surfing:** use the existing station clock. No date/time controls.
@@ -171,3 +171,24 @@ or unknown assets. **Tune saved block** copies the saved playlist into a fixed
 broadcast context, repeating that block format along its advancing timeline.
 Edits, regeneration and deletion affect drafts only; on-air copies continue
 unchanged. Reopening the same tuned version resumes its clock. See ADR 0010.
+
+
+## Destination choices
+
+**Where are we going?** offers the same three choices in Time Machine and Block Party:
+
+- **A specific date and time:** enter the exact local moment to join.
+- **A specific date:** start at midnight on that date.
+- **Today in…:** select a year. Use the server's current calendar date and local
+  time in the active broadcast timezone, with that year substituted. For example,
+  November 12 at 8:30 PM becomes November 12, 1996 at 8:30 PM when choosing 1996.
+
+Preflight shows the resolved moment and pins it for Tune. Returning to the same
+Today/year/channel/selection on that calendar day resumes its existing context;
+next day selects a new destination. Existing timelines keep advancing. A generated
+saved block retains its resolved date rather than changing when reopened later.
+
+February 29 requires a leap year. A target local time in a daylight-saving gap is
+reported as unavailable rather than silently shifted. Exact historical viewing
+still requires dated lineup/listing evidence and matching media; a date choice does
+not fabricate missing history. Block Party remains representative programming.

@@ -65,7 +65,22 @@ def save_recipe(db,value):
     return {'id':ident,'name':value['name'].strip(),'service_id':service,'rules':rules}
 
 
-def destination(value,zone):
+def destination(value,zone,real_now=None):
+    kind=value.get('destination_type','specific')
+    if kind not in ('specific','date','today'):raise ValueError('Unknown destination choice')
+    if kind!='specific' and value.get('template'):raise ValueError('Choose a destination type or a legacy template, not both')
+    if kind=='today':
+        year=value.get('year')
+        if type(year) is not int or not 1900<=year<=2100:raise ValueError('Choose a year from 1900 to 2100')
+        current=datetime.fromtimestamp((wall_ms() if real_now is None else real_now)/1000,zone)
+        try:stamp=current.replace(year=year,tzinfo=None,microsecond=0)
+        except ValueError:raise ValueError('February 29 does not exist in that year; choose a leap year or a specific date')
+        if value.get('destination'):stamp=datetime.fromisoformat(value['destination'])
+        value={**value,'destination':stamp.isoformat()}
+    elif kind=='date':
+        try:day=date.fromisoformat(value['destination'])
+        except (ValueError,KeyError,TypeError):raise ValueError('Choose a specific date')
+        value={**value,'destination':day.isoformat()+'T00:00'}
     template=value.get('template')
     if template:
         if template not in TEMPLATES:raise ValueError('unknown period template')
@@ -86,9 +101,9 @@ def destination(value,zone):
     return stamp.astimezone(zone)
 
 
-def normalize_request(db,value):
+def normalize_request(db,value,*,real_now=None):
     if not isinstance(value,dict):raise ValueError('expected a viewing selection')
-    allowed={'mode','service_id','rules','recipe_id','destination','template','year','month','block_id'}
+    allowed={'mode','service_id','rules','recipe_id','destination','template','year','month','block_id','destination_type'}
     if set(value)-allowed:raise ValueError('timing controls, seeds, skips and rerolls are not supported')
     mode=value.get('mode','representative')
     if mode not in ('representative','historical','surfing'):raise ValueError('unknown viewing mode')
@@ -113,19 +128,21 @@ def normalize_request(db,value):
     state=db.execute('SELECT * FROM state WHERE id=1').fetchone()
     if not state:raise ValueError('initialize the station first')
     if mode=='surfing':
-        if any(k in value for k in ('destination','template','year','month')):raise ValueError('Channel Surfing uses the station clock; its time cannot be chosen')
+        if any(k in value for k in ('destination','template','year','month','destination_type')):raise ValueError('Channel Surfing uses the station clock; its time cannot be chosen')
     else:
         if mode=='historical' and value.get('template'):raise ValueError('historical lookup requires a specific destination')
-        stamp=destination(value,ZoneInfo(broadcasts.timezone(db)))
+        stamp=destination(value,ZoneInfo(broadcasts.timezone(db)),real_now)
         if mode=='historical' and service not in {c['id'] for c in broadcasts.channels(db,str(stamp.date()))}:
             raise ValueError('No dated lineup maps this channel at that destination; configure your broadcast setup')
         result['destination']=stamp.isoformat()
         result['template']=value.get('template')
+        if value.get('destination_type')=='today':result['destination_type']='today';result['year']=value['year']
     if saved_block:result['playlist']={k:saved_block[k] for k in ('name','duration_minutes','items')}
     return result
 
 
 def key_for(request):
+    if request.get('destination_type')=='today':request={**request,'destination':request['destination'][:10]}
     return hashlib.sha256(json.dumps(request,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
@@ -229,7 +246,7 @@ def summary(db,request,now):
     block=db.execute('SELECT known_points FROM complete_block WHERE service_id=? AND start_ms<=? AND end_ms>?',(service,now,now)).fetchone()
     points=json.loads(block[0]) if block else []
     return {'mode':request['mode'],'service_id':service,'timezone':broadcasts.timezone(db),'now_ms':now,'episode_title':listed[0] if listed else None,'block_anchor_title':points[0].get('title') if points else None,
-        'block_minutes':request['rules'].get('block_minutes'),'destination':request.get('destination'),'current_title':slots['title'],
+        'resolved_selection':{k:v for k,v in request.items() if k not in ('layout_id','playlist')},'block_minutes':request['rules'].get('block_minutes'),'destination':request.get('destination'),'current_title':slots['title'],
         'current_segment':playing['title'],'current_kind':playing['kind'],'current_offset_ms':playing['offset_ms'],
         'current_status':health[slots['id']]['status'],'playable_percent':round(playable/(72*3600000)*100,1),
         'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in health.values()),
@@ -250,7 +267,7 @@ def context_path(main_db_path,context_id):
 def preflight(main_db_path,value,*,real_now=None):
     real_now=wall_ms() if real_now is None else real_now
     with connect(main_db_path) as db:
-        request=normalize_request(db,value)
+        request=normalize_request(db,value,real_now=real_now)
         if request['mode']=='surfing' and not any(request['rules'].values()):
             scratch=sqlite3.connect(':memory:');scratch.row_factory=sqlite3.Row
             try:
@@ -272,7 +289,7 @@ def launch(main_db_path,value,*,real_now=None):
     real_now=wall_ms() if real_now is None else real_now
     db=connect(main_db_path)
     try:
-        request=normalize_request(db,value);key=key_for(request)
+        request=normalize_request(db,value,real_now=real_now);key=key_for(request)
         if request['mode']=='surfing' and not any(request['rules'].values()):
             return {'context_id':None,'url':'/?channel='+quote(request['service_id']),'resuming':True}
         existing=db.execute('SELECT * FROM viewing_context WHERE context_key=?',(key,)).fetchone()
