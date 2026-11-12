@@ -1,7 +1,8 @@
 # TV MASTER catalog records
 
-SQLite remains the local store. Catalog schema version 2 is additive: opening an
-existing station creates the new tables and backfills stable content identities.
+SQLite remains the local store. The recordkeeping tables introduced in schema v2 are additive; later migrations
+extend ingestion and other features. Opening an existing station applies supported
+migrations and backfills stable content identities.
 It does not reset the station, rewrite files, or change any published broadcast.
 
 ```mermaid
@@ -56,8 +57,8 @@ station/primary-affiliation inserts are rejected rather than arbitrarily resolve
 Provider cable positions remain in dated `lineup`/`lineup_entry` records.
 
 Lookup is available via `channels --market ... --provider ... --date YYYY-MM-DD`.
-It resolves imported records, preserving their evidence/provenance. Automatic
-external historical research/data providers are not implemented. Rochester
+It resolves imported records, preserving their evidence/provenance. Automatic station-directory/provider-lineup retrieval is not implemented.
+Historical program listings have separate [research adapters](PERIOD_RESEARCH.md). Rochester
 station/channel examples must not be seeded as verified without source evidence.
 
 ## Eligible periods

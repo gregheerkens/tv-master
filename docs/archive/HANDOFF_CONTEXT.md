@@ -1,3 +1,6 @@
+> **Archived design context.** Later user direction and accepted ADRs take
+> precedence. See the [archive index](README.md) and [current docs](../README.md).
+
 # Conversation-to-Codex handoff context
 
 **Status:** supplemental product context and clarified intentions, recorded 2026-11-11.  

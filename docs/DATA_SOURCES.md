@@ -2,8 +2,9 @@
 
 Core playback and composition remain local and keyless. Neither an AI provider
 nor network metadata access is required to populate the catalog: users can import
-their own structured records and continue offline. This document describes the
-next enrichment layer, not an already implemented network importer.
+their own structured records and continue offline. Supported historical-listing adapters, saved HTML and reviewed JSON sideloads
+already work; see [period research](PERIOD_RESEARCH.md). The general metadata and
+station-directory providers below remain candidates, not integrated importers.
 
 Recommended order:
 

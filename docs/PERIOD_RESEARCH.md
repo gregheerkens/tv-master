@@ -113,6 +113,9 @@ identities/listings forward without resetting any published viewing timeline.
 
 ## Local runtime screenshot library
 
+Install Playwright/Chromium separately; set `CHROMIUM_PATH` if Chromium is not
+at `/usr/bin/chromium`. Run from the repository root.
+
 `node scripts/capture-runtime.cjs` captures actual app screens against a prepared
 synthetic demo, without resetting its database. Set `RETRO_TV_URL` and optionally
 `TV_MASTER_SCREENSHOTS` (default `data/runtime-screenshots`, ignored by Git).

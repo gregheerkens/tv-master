@@ -1,11 +1,15 @@
-# Provisional product identity
+# TV MASTER branding
 
-The user supplied a provisional **TV MASTER** instruction-manual cover on
-2026-11-11. Use TV MASTER as the provisional display name. The reference uses
-aged cream paper, warm yellow/orange/red stripes, bold black lettering and
-vintage instruction-booklet illustration.
+The current visual sources are the user-supplied **Corrected Branding v2** and
+**Textless UI v1** packs. The corrected marks use the original manual-cover
+letterforms; use the supplied SVGs rather than retyping or approximating the logo.
 
-The supplied image remains a design reference in the conversation; no local
-image file is claimed or generated here. Do not assume its full portrait layout
-will work as a TV launcher icon. Adapt assets separately when requested. The
-Python package and CLI remain `retro_tv` / `retro-tv` for compatibility.
+Manager and server screens use warm paper/ink/rust controls. The guide uses a
+separate blue SD skin and local pixel font. Keep labels, dates, counters and
+health values as live DOM text. The original family raster crop appears only on
+the optional About screen; it is not an isolated transparent illustration.
+
+See [asset integration](BRANDING_INTEGRATION.md) for the inventory, source-pack
+instructions, licenses and runtime mapping. Source READMEs retained with the
+assets describe those packs; their demo pages and sample values are not the app.
+The Python package/CLI remain `retro_tv` / `retro-tv` for compatibility.

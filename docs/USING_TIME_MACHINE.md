@@ -50,8 +50,8 @@ before new entries are adopted. No background per-channel decoder is required.
 Viewing contexts live under `contexts/` beside the station database. Back up that
 directory with the main database. A missing context database is reported as
 unavailable, never silently regenerated/reset. Local server paths still point to
-the same archived media. Source-specific context corrections can be made through
-the manager opened from that viewing context.
+the same archived media. Source attachment/repair corrections are server-only; use the CLI or the
+loopback admin console. Viewer assessments retain their selected context.
 
 ## The TV Master is the curator
 
@@ -106,13 +106,6 @@ Selection rules support tags, excluded tags, included/excluded content identitie
 and continuity tags. Unsupported timing/seed/skip keys are rejected. Requests
 can use a saved `recipe_id` or explicit service/rules. The same interfaces remain
 usable without an AI provider or a hosted account.
-
-## Preview images
-
-[Time Machine chooser](screenshots/time-machine.png) and
-[manager recommendations](screenshots/manager-recommendations.png) use generated
-test footage and explicitly synthetic episode/listing evidence. They are UI
-examples, not claims about actual historical programming.
 
 The viewer now enters Time Machine and Block Party through separate manager
 buttons; representative templates live in Block Party. Content/research tools

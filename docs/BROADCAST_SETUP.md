@@ -10,7 +10,7 @@ Normal startup is the full PIP guide. Choose **TV MASTER MANAGER** (or press M):
   live on-air coverage, mode-based assessments and adjustable health standards.
 
 Both the modern cassette-style manager and its forms support remote focus. The
-TV guide retains its flat SD layout. Source notes are small hover/focus flags,
+TV guide uses a separate blue SD/pixel-font skin. Source notes are small hover/focus flags,
 not repeated verification dialogs. Named episode details appear in the guide and
 preflight; sourced episode identities also drive eBay and Internet Archive links.
 
@@ -53,7 +53,7 @@ The optional companion remains an independent server-side tool.
 
 ## Endpoint surfaces
 
-- Viewer: `/`, `/manager`, `/time-machine`, `/block-party`, `/broadcasts`, `/test-ui`.
+- Viewer: `/`, `/manager`, `/time-machine`, `/block-party`, `/broadcasts`, `/test-ui`, `/about`.
 - Viewer metadata: `/api/home`, `/api/broadcasts`, `/api/broadcasts/health`,
   `/api/health-standards`, existing guide/tune/Time Machine endpoints.
 - Server only: research endpoints and source/repair/import endpoints, plus

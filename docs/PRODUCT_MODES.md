@@ -24,8 +24,8 @@ Two reconstruction choices must be explicit:
 The preflight should distinguish program-only availability from exact episodes,
 and separately assess ads, bumpers, promos, local continuity, source quality and
 seasonal compatibility. Missing history must not be confused with missing media.
-Allow the user to locate missing material or choose explicitly labeled substitutes
-under the same manager policies used elsewhere.
+The viewer reports gaps; locating missing media and recording explicit substitutes
+belongs to the server-only console or CLI.
 
 Public-source adapters should retrieve and cache evidence, normalize it into the
 catalog and retain citations. Ordinary APIs, HTML/PDF/OCR imports and manually
@@ -105,7 +105,7 @@ Current implementation:
 
 | Capability | Status |
 | --- | --- |
-| Fixed pseudo-live clock, predetermined manifests, tune at source offset | Working for the single Channel Surfing station |
+| Fixed pseudo-live clock, predetermined manifests, tune at source offset | Working for station and persistent viewing contexts |
 | Open local media only for viewing | Working; no per-channel background video renderer |
 | Classic guide, manager, 1–3-day isolated assessments | Working |
 | Dated listing import, catalog matching, known gaps and substitutions | Working through sourced JSON/local records |

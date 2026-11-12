@@ -1,196 +1,114 @@
 # TV MASTER
 
-A local period-TV station built from your own prepared library. Programs, ads,
-promos and bumpers become continuous, reproducible broadcasts. The player and
-scheduler have **no dependency on the companion analyzer or an upscaler**.
+A local period-TV app built from your prepared programs, commercials and bumpers.
+Choose what belongs on your channels, then tune into fixed broadcasts already in
+progress. The scheduler works independently of the optional analyzer and upscaler;
+no AI account or GPU is required.
 
-This is a working first slice, not a finished historical-reconstruction product.
-[Time Machine and Channel Surfing](docs/USING_TIME_MACHINE.md) now share the same
-catalog, composer and player. Choose WHAT through saved themes/shows/collections;
-once tuned, its clock, program order and break timing remain fixed.
-The [viewer manager and reception setups](docs/BROADCAST_SETUP.md) separate couch
-controls from server-only content tools. [Complete recordings](docs/COMPLETE_BLOCKS.md)
-can play intact from a local file or an opt-in remote source at a fixed anchor. Source-specific
-period research supports daily-page adapters and reviewed JSON sideloads; automatic
-video identification remains future work. See [period research](docs/PERIOD_RESEARCH.md).
-The current composer supports date windows, service matching, optional local
-dayparts, ordered acts, whole commercial spots and explicit missing-material
-slates. The original design and handoff are retained in `docs/`.
+## Try it
 
-## Run a synthetic demonstration
-
-Requirements: Python 3.11+; FFmpeg/ffprobe on PATH for importing actual media,
-generating demonstration clips, or running the optional analyzer. The guide,
-database and HTTP server use Python's standard library. No GPU or AI is required.
+Run from the repository root with Python 3.11+. Install FFmpeg and ffprobe on PATH
+for the generated demo, media import and optional companion. The application uses
+Python's standard library; no runtime Python dependencies need installing.
 
 ```sh
 python -m retro_tv demo
 python -m retro_tv serve
 ```
 
-Open **http://127.0.0.1:8787**. The demo generates small colored test videos,
-initializes a fictional six-channel lineup, and plays them at the correct point
-on a simulated July 1995 clock. It contains no TV footage or verified historical
-lineup claims. Short demo shows intentionally leave conspicuous filler slates.
+Open **http://127.0.0.1:8787**. The synthetic demo has six fictional channels and
+colored test videos on an advancing July 1995 clock. It includes no TV footage or
+verified historical cable lineup. Use a fresh database for your actual library.
 
-Arrows browse channel/time cells; Enter/OK tunes a current listing. G cycles the
-full-PIP guide, bottom-third overlay and live TV. I opens details, number keys
-tune directly, F toggles fullscreen, and M opens the manager. A browser may require
-the resume button before allowing sound.
+Startup is the PIP guide. **TV MASTER MANAGER** opens:
 
-## Use a prepared library
+- **Time Machine:** choose a historical date/time/channel, assess coverage, tune or resume.
+- **Channel Surf:** join the station's advancing timeline.
+- **Block Party:** choose representative period/theme blocks and saved selections.
+- **Manage Broadcasts:** configure reception/channel maps and inspect mode-based health.
 
-Use a **new station database** for initial setup, rather than the demo database:
+Arrows browse; Enter/OK tunes; G cycles PIP → bottom-third → TV; I shows details;
+numbers tune channels; M opens the manager; F toggles fullscreen. A browser may
+require the sound/resume button. See [guide controls](docs/GUIDE_AND_MANAGER.md).
+
+## Use your own library
+
+Edit `examples/station.json` into your own configuration before initializing:
+set the historical start with timezone offset, market/provider and dated channels.
+Example channel numbers are personal assignments, not Rochester cable facts.
+Create a library JSON using `examples/library.json`, replacing paths, identities,
+source ingestion context, dates and provenance with your material.
 
 ```sh
-python -m retro_tv --db data/my-station.sqlite init examples/station.json
+python -m retro_tv --db data/my-station.sqlite init my-station.json
 python -m retro_tv --db data/my-station.sqlite import-library my-library.json
 python -m retro_tv --db data/my-station.sqlite serve
 ```
 
-Edit your station configuration *before initialization*: historical start with
-explicit timezone offset, market, provider, lineup validity and your own channel
-numbers/service names. Example channels 1 and 2 are personal assignments, not
-claims about Rochester Time Warner Cable. Import all ready-to-use material before
-first serving or running `guide`, as either publishes the initial horizon.
+Import your initial material **before** serving or running `guide`, because both
+publish the initial horizon. Imports are transactional and append-only. Whole
+files and virtual spans (`in_ms` / `out_ms`) are supported; archival media is
+hashed and left unchanged. Recorded captures require an approximate recording
+date and seasonal context. See [ingestion](docs/INGESTION.md) and
+[catalog records](docs/RECORDKEEPING.md).
 
-`examples/library.json` shows two manually separated acts, a commercial and a
-bumper. Replace its paths, identities, periods and provenance with your media.
-Whole files need no in/out points; spans into longer captures can use integer
-`in_ms`/`out_ms`. Import reads and hashes source files but never modifies them.
-Catalog IDs are append-only. Identical registered sources can be referenced again;
-conflicting source IDs reject the import. New sources require an `ingest` context;
-see [ingestion requirements and defaults](docs/INGESTION.md).
+Use browser-supported H.264/AAC MP4, preferably with faststart. Importing another
+codec/container does not transcode it. Complete recordings can remain intact at
+fixed broadcast/source anchors, locally or from explicitly enabled HTTPS sources;
+see [complete blocks](docs/COMPLETE_BLOCKS.md).
 
-Use browser-compatible **H.264 video / AAC audio in MP4**, preferably with
-faststart. Arbitrary containers/codecs do not become browser-compatible merely
-because they are cataloged. An IPTV/transcoding adapter is a later integration.
+## Broadcast rules
 
-## The fixed three-day guide
+The server owns the clock and publishes a rolling 72-hour guide. Tuning, refreshing,
+changing channels or closing the app never restarts a show. Unwatched channels need
+only metadata and a time check, not background video decoding. Published rows and
+anchors cannot be edited, reset or rerolled through the app. New imports affect
+unpublished programming; file repair can restore the same source without moving it.
 
-- The server owns the clock. Historical time advances one second per real second,
-  even while nobody watches or the server is stopped.
-- The server appends programming to maintain a visible **72-hour horizon**. It
-  freezes the final whole block, even if that block ends beyond the horizon;
-  the public guide clips it at the horizon and never exposes a fourth day.
-- Published broadcasts and segments cannot be updated or deleted through the app.
-  SQLite triggers also reject ordinary SQL updates/deletes. Station anchors,
-  seed and timezone cannot be edited after initialization.
-- There are no reroll, reset, seek-to-date, future-tune or schedule-edit endpoints.
-  Importing media affects only blocks that have not yet been composed.
-- A backward host-clock adjustment cannot rewind the station. A large forward
-  jump advances it; this is a local system-clock model, not an external trusted
-  time service.
-- Tuning uses the current source offset; changing channels never restarts a show.
-  Playback resynchronizes periodically and at each segment boundary.
-- Original files must remain available and unchanged at their registered paths.
-  Missing content produces an error/slate; the schedule is not silently replaced.
+Time Machine chooses a separate persistent historical context; it does not rewind
+Channel Surf. Each context has fixed timing and resumes its clock on return. See
+[Time Machine](docs/USING_TIME_MACHINE.md). Back up the station database, its
+sibling `contexts/` directory and original media. These rules protect application
+behavior; the server owner still controls the files and database.
 
-These are application guarantees, not DRM: a computer owner can delete or restore
-the database, change files, modify the program or create another station. Back up
-the database and archival media. The original historical design's free time-machine
-exploration is deliberately narrowed for this station's live viewing mode; see ADR 0001.
+## Server-only tools
 
-## Optional companion
+Viewer frontends do not expose ingestion, source repair or research tools. Use
+the CLI (`python -m retro_tv --help`) or a separate maintenance process:
 
 ```sh
-python -m retro_tv.companion analyze /media/tape.mp4 review.json --recorded-date 1995 --not-seasonal
-# Review boundaries and supply identities, dates, service IDs and evidence.
-python -m retro_tv.companion export review.json approved-library.json
-python -m retro_tv --db data/my-station.sqlite import-library approved-library.json
+python -m retro_tv --db data/my-station.sqlite serve --admin --port 8788
 ```
 
-It can also run independently as a serial analysis-job HTTP service:
+The admin process is loopback-only. Open `/server-manager`, `/research` or
+`/block-editor` there. See [broadcast/server setup](docs/BROADCAST_SETUP.md),
+[period research](docs/PERIOD_RESEARCH.md) and the [optional companion](docs/COMPANION.md).
+The companion detects boundary candidates and exports reviewed spans; automatic
+show/ad identification and historical dating are not implemented.
 
-```sh
-python -m retro_tv.companion serve --media-root /media --port 8790
-curl -X POST http://127.0.0.1:8790/jobs \
-  -H 'Content-Type: application/json' -d '{"path":"tape.mp4","ingest":{"kind":"recorded","recorded_date":"1995","seasonal":false}}'
-curl http://127.0.0.1:8790/jobs/JOB_ID
-```
+Historical evidence is independent of owned media. Supported source-specific
+adapters, saved HTML and reviewed JSON can populate listings. Unknown history
+stays unknown. Recommendations link to eBay, Internet Archive and YouTube searches;
+they are not verified listings or automatic acquisitions.
 
-The baseline detects black/silence transitions and outputs complete virtual spans.
-Physical cuts are optional: `python -m retro_tv.companion extract review.json clips/`
-creates H.264/AAC derivatives without overwriting originals.
-
-**Automatic recognition of arbitrary shows, ads, bumpers, air dates or rerun
-windows is not implemented.** Those fields start unknown and require review;
-transition confidence is never represented as identity confidence. This distinction
-prevents a detector from inventing historical facts. The companion contract and
-next recognition milestone are documented in `docs/COMPANION.md`.
-
-## Verification
+## Development and documentation
 
 ```sh
 python -m unittest discover -s tests -v
 ```
 
-Tests cover source spans, transaction rollback, standalone composition, date and
-daypart eligibility, deterministic scheduling, immutability, new imports,
-restart/clock rollback and analyzer review gating. No copyrighted files needed.
-`tests/browser-smoke.cjs` is an optional Playwright smoke test against a running
-demo; it uses externally installed Playwright and Chromium.
+Browser checks use separately installed Playwright/Chromium. Runtime screenshots
+are generated locally with `scripts/capture-runtime.cjs`; see the
+[capture instructions](docs/PERIOD_RESEARCH.md#local-runtime-screenshot-library).
+Obsolete screenshots are no longer shipped in the repository.
 
-## Current boundaries
+- [Documentation index](docs/README.md)
+- [Current capabilities and limitations](docs/STATUS.md)
+- [Remaining work](docs/DEVELOPMENT_ROADMAP.md)
+- [Corrected branding and UI assets](docs/BRANDING_INTEGRATION.md)
 
-The first delivery adapter is a browser player, not an HLS/IPTV server or TV APK.
-The manager includes analysis, file linking/repair and explicit substitutions;
-there is no full catalog/segmentation editor yet. The composer uses simple
-deterministic rotation with immediate-repeat avoidance, not a full campaign-
-frequency optimizer or universal historical listings scraper. Breaks must be
-provided manually as ordered program parts. It does not fabricate missing episode
-identity, guaranteed rerun brackets or local station history.
-
-The next independently testable milestone is a reference-backed identification
-adapter for the companion: known labeled examples, calibrated match confidence,
-reviewable metadata suggestions, and round-trip import into the existing catalog.
-Historical schedule normalization and coverage reports remain in the broader
-roadmap. See `docs/STATUS.md` for validation and implementation inventory.
-
-## Catalog records and personal decisions
-
-The additive v2 catalog separates content identities from recording spans,
-supports custom/themed/historical channels, and stores dated station/affiliation
-facts independently of cable positions. Seasonal eligibility windows, quality
-alerts, content bans, recording exclusions and scheduled/aired/viewed statistics
-are documented in [RECORDKEEPING](docs/RECORDKEEPING.md), with an optional
-`examples/records.json` import. Existing databases migrate without resetting the
-clock or changing published slots. Historical lookup uses imported evidence;
-automatic historical-data retrieval is not yet implemented.
-
-## Classic guide and station manager
-
-The TV guide uses a fixed SD 640×480 / 4:3 layout inspired by early digital cable
-firmware. It has full-PIP and bottom-third modes, remote-key navigation and
-text-labeled colors for ready, partial, missing, offline, substituted and unknown
-slots. `/broadcasts` assesses a channel or theme for one to three days, reports media
-and historical-evidence gaps, and lets you locate media or record substitutions.
-See [guide, manager and visual references](docs/GUIDE_AND_MANAGER.md).
-
-Open `/time-machine` (or press T in the guide) for specific-date or representative
-weekday/Saturday destinations, preflight and persistent resume. `/broadcasts` offers
-mode-based lineup health, adjustable standards and evidence-backed acquisition
-recommendations. Search links help the human TV Master find DVDs and era recordings;
-unresearched periods are never turned into invented missing-episode lists.
-
-Preview: [full guide](docs/screenshots/guide-full.png),
-[bottom-third guide](docs/screenshots/guide-mini.png),
-[station manager](docs/screenshots/manager.png). Screenshots use generated test
-patterns and a fictional lineup; they contain no actual broadcast footage.
-
-Research desk (server console only): open `/research` to collect dated listings, use saved HTML, or
-sideload researched JSON. Review the source before accepting it. The included
-[real July 4, 1995 example](examples/research/nickelodeon-1995-07-04.json) establishes
-program-level evidence with unknown hours retained; see the
-[workflow and local screenshot capture](docs/PERIOD_RESEARCH.md).
-
-The normal frontend starts in the PIP guide; **TV MASTER MANAGER** opens Time
-Machine, Channel Surf, Block Party and Manage Broadcasts. Region/provider/tier
-setups drive channel membership. Live meters read the real library; **Test UI**
-is a separate, explicitly simulated preview. Content tools require CLI or an
-explicit loopback-only `serve --admin` maintenance process.
-
-The supplied [corrected branding and textless UI kit](docs/BRANDING_INTEGRATION.md)
-now skin the real manager, forms and SD guide. All labels, counters and listings
-remain live. Original manual artwork is limited to the optional About screen;
-startup stays in the PIP guide.
+The current delivery adapter is a browser player, not a native TV APK or HLS/IPTV
+server. Physical TV remote testing, broader history adapters and automatic
+identification remain work ahead. The guide uses supplied blue SD component shells
+and a bundled pixel font; manager/server pages use warm cassette-style controls.
+Original family artwork is on the optional About screen; startup remains the guide.

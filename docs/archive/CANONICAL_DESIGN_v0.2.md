@@ -1,3 +1,6 @@
+> **Archived design context.** Later user direction and accepted ADRs take
+> precedence. See the [archive index](README.md) and [current docs](../README.md).
+
 # Retro TV Historical Broadcast Reconstruction Suite
 
 **Canonical System Design v0.2**  
