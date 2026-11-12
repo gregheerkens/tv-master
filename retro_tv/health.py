@@ -33,6 +33,7 @@ def timeline_health(db,service,start,end):
         item=result.setdefault(row['broadcast_id'],{'playable_ms':0,'slate_ms':0,'missing_file_ms':0,
             'program_ms':0,'block_ms':0,'remote_unknown_ms':0,'commercial_ms':0,'continuity_ms':0,'quality_alerts':0,'reasons':set(),
             'evidence':row['evidence'],'has_program':row['program_id'] is not None or row['evidence']=='recorded_block'})
+        if row['kind']=='program':item['has_program']=True
         duration=min(end,row['end_ms'])-max(start,row['start_ms'])
         if row['kind']=='slate':
             item['slate_ms']+=duration;item['reasons'].add(row['reason'] or 'Unfilled segment')

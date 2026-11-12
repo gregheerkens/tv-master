@@ -1,0 +1,16 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});try{
+const p=await browser.newPage({viewport:{width:1440,height:1000}}),base=process.env.RETRO_TV_URL||'http://127.0.0.1:8787',errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto(base+'/block-party');await p.waitForSelector('[data-facet]');await p.selectOption('#tm-service','kids');await p.fill('#tm-date','1995-07-18');await p.fill('#tm-time','16:47');await p.fill('#tm-name','Browser playlist');await p.click('#bp-generate');await p.waitForSelector('#bp-editor:not([hidden])');
+assert.match(await p.locator('#bp-recent').innerText(),/Browser playlist/);const initial=await p.locator('#bp-items .bp-playlist-row').count();assert.ok(initial>0);
+await p.locator('#bp-items button').filter({hasText:/^Remove$/}).first().click();assert.equal(await p.locator('#bp-items .bp-playlist-row').count(),initial-1);assert.equal(await p.isDisabled('#bp-tune'),true);
+await p.fill('#bp-edit-name','Edited playlist');await p.click('#bp-save-block');await p.waitForFunction(()=>document.getElementById('bp-total').textContent.includes('Unsaved')===false);assert.equal(await p.isDisabled('#bp-tune'),false);
+const data=await(await p.request.get(base+'/api/party')).json(),block=data.blocks.find(b=>b.name==='Edited playlist');assert.ok(block);assert.equal(block.items.length,initial-1);
+const downloadPromise=p.waitForEvent('download');await p.click('#bp-export');const download=await downloadPromise;assert.equal(download.suggestedFilename(),'tv-master-block.json');
+await p.locator('#bp-recent .bp-recent-card').filter({hasText:'Edited playlist'}).getByRole('button',{name:'Regenerate',exact:true}).click();await p.waitForFunction(()=>document.getElementById('bp-edit-name').value.includes('(regenerated)'));
+assert.equal((await(await p.request.get(base+'/api/party')).json()).blocks.length,data.blocks.length+1);
+await p.locator('#bp-editor').screenshot({path:process.env.TV_MASTER_PLAYLIST_SCREENSHOT||'/tmp/tv-master-playlist.png'});
+await p.click('#bp-tune');await p.waitForURL(/context=/);const context=new URL(p.url()).searchParams.get('context');assert.ok(context);const guide=await(await p.request.get(base+'/api/guide?context='+context)).json();assert.ok(guide.channels.length);assert.match(guide.channels.find(c=>c.id==='kids').entries[0].title,/regenerated/);
+await p.goto(base+'/block-party');await p.waitForSelector('#bp-recent button');await p.locator('#bp-recent .bp-recent-card').filter({hasText:'Edited playlist (regenerated)'}).getByRole('button',{name:'Delete',exact:true}).click();await p.waitForFunction(()=>!document.getElementById('bp-recent').textContent.includes('(regenerated)'));assert.equal((await p.request.get(base+'/api/guide?context='+context)).status(),200);
+await p.setViewportSize({width:390,height:844});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);console.log('Generate/recent/edit/save/regenerate/export/tune/delete and published-copy independence passed');
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

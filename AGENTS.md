@@ -3,7 +3,7 @@
 ## Current sources of truth
 
 Read `README.md`, `docs/STATUS.md` and the relevant workflow guide from
-`docs/README.md`. Accepted decisions are in `docs/adr/` (0001–0009). The original
+`docs/README.md`. Accepted decisions are in `docs/adr/` (0001–0010). The original
 canon and conversation handoff are in `docs/archive/` for historical context;
 they do not override later user direction, delivered stack choices or ADRs.
 `docs/DEVELOPMENT_ROADMAP.md` lists remaining work, not completed milestones.
@@ -29,7 +29,8 @@ they do not override later user direction, delivered stack choices or ADRs.
 - Health standards affect assessment, not broadcast timing. Meters use actual
   library/manifest data. Simulation belongs only to explicit Test UI.
 - Block Party permits only 15/30/60/90-minute formats chosen before tuning.
-  Optional tag facets and continuity switches never edit published contexts.
+  Draft JSON playlists may be edited/regenerated/deleted (ADR 0010); tuned copies
+  are immutable snapshots. Optional facets/switches never edit published contexts.
 - Complete local/opt-in remote recordings retain original source/broadcast anchors.
 - Use supplied Corrected Branding v2 marks and Textless UI v1 shells; see
   `docs/BRANDING_INTEGRATION.md`. Keep guide/admin themes separate, runtime text

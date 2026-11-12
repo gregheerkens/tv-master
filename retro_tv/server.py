@@ -17,6 +17,7 @@ from . import recommendations
 from . import research
 from . import broadcasts
 from . import blocks
+from . import playlists
 from .health import resolve_path
 
 
@@ -51,11 +52,12 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
             if private and not admin:return self.send({'error':'Server-only tool'},status=404)
             try:
                 context=parse_qs(target.query).get('context',[''])[0]
-                global_route=target.path.startswith(('/api/research','/api/blocks')) or target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard' or target.path.startswith('/api/broadcasts') or target.path in ('/api/home','/api/health-standards')
+                global_route=target.path.startswith(('/api/research','/api/blocks')) or target.path.startswith(('/api/time-machine','/api/party')) or target.path=='/api/manager/health-standard' or target.path.startswith('/api/broadcasts') or target.path in ('/api/home','/api/health-standards')
                 if context and target.path in ('/api/guide','/api/manager'):
                     timelines.sync_catalog(database,context)
                 db=connect(timelines.context_path(database,context) if context and not global_route else database)
-                if target.path=='/api/home':
+                if target.path=='/api/party':self.send(playlists.listing(db))
+                elif target.path=='/api/home':
                     self.send(broadcasts.home(db,extend(db)))
                 elif target.path=='/api/health-standards':
                     self.send({'standards':recommendations.standards(db)})
@@ -85,7 +87,7 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
                     self.send(manager.dashboard(db,extend(db),standard,query.get('date',[None])[0],int(query.get('days',['3'])[0])))
                 elif re.fullmatch(r'/media/\d+', target.path):
                     self.media(db, int(target.path.rsplit('/',1)[1]))
-                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js','/admin-theme.css','/guide-theme.css','/app.webmanifest','/about'):
+                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js','/admin-theme.css','/guide-theme.css','/app.webmanifest','/about','/party-playlists.js'):
                     names={'/':'index.html','/manager':'control.html','/server-manager':'manager.html','/time-machine':'time-machine.html','/block-party':'time-machine.html','/research':'research.html','/broadcasts':'broadcasts.html','/test-ui':'test-ui.html','/block-editor':'block-editor.html','/about':'about.html'}
                     name=names.get(target.path,target.path[1:])
                     path = static / name
@@ -111,13 +113,13 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
             db=None
             try:
                 context=parse_qs(target.query).get('context',[''])[0]
-                global_route=target.path.startswith(('/api/research','/api/blocks')) or target.path.startswith('/api/time-machine') or target.path=='/api/manager/health-standard' or target.path.startswith('/api/broadcasts') or target.path in ('/api/home','/api/health-standards')
+                global_route=target.path.startswith(('/api/research','/api/blocks')) or target.path.startswith(('/api/time-machine','/api/party')) or target.path=='/api/manager/health-standard' or target.path.startswith('/api/broadcasts') or target.path in ('/api/home','/api/health-standards')
                 db=connect(timelines.context_path(database,context) if context and not global_route else database)
                 size=int(self.headers.get('Content-Length','0'))
                 if not 0<size<=2*1024*1024:raise ValueError('JSON body must be between 1 byte and 2 MB')
                 value=json.loads(self.rfile.read(size))
                 if not isinstance(value,dict):raise ValueError('JSON requests must be objects')
-                routes={'/api/manager/assess':manager.assess,'/api/manager/attach':manager.attach_media,
+                routes={'/api/party/generate':playlists.generate,'/api/party/save':playlists.save,'/api/party/delete':playlists.delete,'/api/manager/assess':manager.assess,'/api/manager/attach':manager.attach_media,
                         '/api/manager/repair':manager.repair_source,'/api/manager/override':manager.set_override,
                         '/api/time-machine/recipe':timelines.save_recipe,
                         '/api/manager/health-standard':recommendations.save_standard,

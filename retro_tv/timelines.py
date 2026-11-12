@@ -88,10 +88,16 @@ def destination(value,zone):
 
 def normalize_request(db,value):
     if not isinstance(value,dict):raise ValueError('expected a viewing selection')
-    allowed={'mode','service_id','rules','recipe_id','destination','template','year','month'}
+    allowed={'mode','service_id','rules','recipe_id','destination','template','year','month','block_id'}
     if set(value)-allowed:raise ValueError('timing controls, seeds, skips and rerolls are not supported')
     mode=value.get('mode','representative')
     if mode not in ('representative','historical','surfing'):raise ValueError('unknown viewing mode')
+    saved_block=None
+    if value.get('block_id'):
+        from .playlists import get
+        saved_block=get(db,value['block_id'])
+        if set(value)-{'block_id'}:raise ValueError('Tune a saved block by its ID')
+        value=saved_block['selection'];mode='representative'
     service=value.get('service_id');rules=value.get('rules',{})
     if value.get('recipe_id'):
         recipe=db.execute('SELECT * FROM channel_recipe WHERE id=?',(value['recipe_id'],)).fetchone()
@@ -115,6 +121,7 @@ def normalize_request(db,value):
             raise ValueError('No dated lineup maps this channel at that destination; configure your broadcast setup')
         result['destination']=stamp.isoformat()
         result['template']=value.get('template')
+    if saved_block:result['playlist']={k:saved_block[k] for k in ('name','duration_minutes','items')}
     return result
 
 
@@ -151,7 +158,7 @@ def options(db):
         'contexts':[{k:r[k] for k in ('id','name','mode','created_at')} for r in db.execute('SELECT * FROM viewing_context ORDER BY created_at DESC LIMIT 30')]}
 
 
-def build(db,request,real_now):
+def build(db,request,real_now,*,composition_seed=None):
     """Copy metadata only; all videos remain references to their original files."""
     scratch=sqlite3.connect(':memory:');scratch.row_factory=sqlite3.Row
     try:
@@ -159,6 +166,7 @@ def build(db,request,real_now):
         scratch.execute('PRAGMA foreign_keys=OFF')
         for name in ('broadcast_no_delete','segment_no_delete','context_no_delete','anchor_no_update','clock_no_rewind'):
             scratch.execute(f'DROP TRIGGER IF EXISTS {name}')
+        if composition_seed:scratch.execute('UPDATE state SET seed=? WHERE id=1',(composition_seed,))
         if request['mode']=='surfing':
             ids=[r[0] for r in scratch.execute('SELECT id FROM broadcast WHERE service_id=?',(request['service_id'],))]
             for ident in ids:
@@ -200,7 +208,7 @@ def build(db,request,real_now):
             for row in entries:scratch.execute("INSERT INTO lineup_entry VALUES ('context-personal',?,?)",tuple(row))
         scratch.execute('INSERT INTO viewing_mode VALUES (1,?) ON CONFLICT(id) DO UPDATE SET mode=excluded.mode',(request['mode'],))
         scratch.execute('INSERT INTO selection_rule VALUES (?,?) ON CONFLICT(service_id) DO UPDATE SET rules=excluded.rules',
-                        (request['service_id'],json.dumps(request['rules'],sort_keys=True)))
+                        (request['service_id'],json.dumps({**request['rules'],**({'playlist':request['playlist']} if 'playlist' in request else {})},sort_keys=True)))
         scratch.commit()
         # Reinstall the same immutable-schedule/anchor guards as the main station.
         scratch.executescript(Path(__file__).with_name('schema.sql').read_text())

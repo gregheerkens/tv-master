@@ -20,6 +20,7 @@ def connect(path):
     db.executescript(Path(__file__).with_name('research.sql').read_text())
     db.executescript(Path(__file__).with_name('broadcasts.sql').read_text())
     db.executescript(Path(__file__).with_name('blocks.sql').read_text())
+    db.executescript(Path(__file__).with_name('playlists.sql').read_text())
     if db.execute('PRAGMA user_version').fetchone()[0] < 2:
         from .records import backfill
         with db:

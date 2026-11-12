@@ -93,6 +93,9 @@ def compose(db, service, start, state):
     """
     selection=db.execute('SELECT rules FROM selection_rule WHERE service_id=?',(service,)).fetchone()
     builder=json.loads(selection[0]) if selection else {}
+    if builder.get('playlist'):
+        from .playlists import compose as compose_playlist
+        compose_playlist(db,service,start,state,builder['playlist']);return
     block_ms=builder.get('block_minutes',0)*60000
     block_end=(state['historical_anchor_ms']+((start-state['historical_anchor_ms'])//block_ms+1)*block_ms) if block_ms else None
     if not block_ms and blocks.compose(db,service,start,state):return

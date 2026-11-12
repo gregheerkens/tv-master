@@ -133,3 +133,41 @@ appears as a real gap in preflight/health. Turning continuity off joins program 
 without inserted spots. Duration and continuity choices are saved with the selection;
 returning resumes its fixed timeline. Anchored intact recordings are kept outside
 this custom-recipe composition path. See ADR 0009.
+
+### Generate and edit saved blocks
+
+**Generate block** creates an editable JSON playlist from the current builder
+settings. **New block** returns to the builder for a fresh selection. **Recent
+blocks** offers Open, Regenerate and Delete; regeneration creates a new draft
+using the original settings and keeps the original.
+
+The editor shows ordered library segments and their duration total. Add a segment
+from the library selector, replace a row with that selection, move rows up/down,
+or remove them. Save changes or save as a new block. Unfilled time becomes a
+station slate; over-capacity playlists cannot be saved. Generation filters guide
+automatic selection; manual editing chooses the explicit segment order.
+
+**Download JSON** exports the document. Under **Playlist JSON / import**, paste or
+modify a document, apply it to the editor and save. The format is:
+
+```json
+{
+  "version": 1,
+  "name": "Saturday cartoons",
+  "duration_minutes": 30,
+  "selection": {
+    "mode": "representative",
+    "service_id": "kids",
+    "destination": "1995-07-18T08:00",
+    "rules": {"block_minutes": 30}
+  },
+  "items": [{"asset_id": "act-1"}, {"gap_ms": 30000}]
+}
+```
+
+IDs must exist in your library; this example is a format illustration. Segment
+references use their registered full spans. JSON cannot supply paths, seek controls
+or unknown assets. **Tune saved block** copies the saved playlist into a fixed
+broadcast context, repeating that block format along its advancing timeline.
+Edits, regeneration and deletion affect drafts only; on-air copies continue
+unchanged. Reopening the same tuned version resumes its clock. See ADR 0010.

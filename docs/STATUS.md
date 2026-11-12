@@ -15,6 +15,9 @@ not a promise of exact historical coverage for an arbitrary library or location.
 - Block Party library-derived multi-select themes/year/month/network cloud, fixed
   15/30/60/90-minute block boundaries, independent commercials/bumpers switches
   and saved builder rules. Whole programs fit without truncation (ADR 0009).
+- Saved editable JSON block playlists, generation, recent blocks, regeneration,
+  segment add/replace/reorder/remove, JSON download/import and versioned saves.
+  Tuning snapshots a draft; edits/deletion never affect that published copy.
 - PIP, bottom-third and TV-only modes on a 640×480 guide, remote-style keyboard
   navigation, numeric tuning, details and browser fullscreen.
 - Four-mode viewer manager, saved region/provider/tier/channel layouts, live
@@ -53,6 +56,10 @@ are no current screenshot fixtures in `docs/`.
 The Block Party builder revision passed 87 Python tests and the builder, Time
 Machine and branding browser checks. New coverage exercises facet matching,
 whole-program boundaries, continuity switches, saved rules and immutable resume.
+
+The editable-playlist revision passed 89 Python tests and the playlist workflow,
+Block Party builder and Time Machine browser checks. Draft revisions, JSON
+validation, ordered playback and independence of published copies are covered.
 
 ## Remaining limitations
 
