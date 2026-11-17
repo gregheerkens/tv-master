@@ -5,6 +5,9 @@ if(contextId)document.querySelector('.manager-link').href=scoped('/manager');
 const HALF_HOUR = 1800000, WINDOW = 3 * HALF_HOUR;
 let data, channel, segment, selectedChannel = 0, cursor = 0, windowStart = 0;
 let generation = 0, tuning = false, skew = 0, mode = 'full', futureBrowse = false;
+let lastChannel=null;
+function channelKey(){return 'channels:'+data.preference_key+':'+(contextId||'station');}
+function recall(){const id=lastChannel;if(id&&data.channels.some(c=>c.id===id))select(id);else toast('No previous channel in this lineup.');}
 let digits = '', digitTimer, noticeTimer;
 function guideScale(){const fit=Math.min(innerWidth/640,innerHeight/480);return fit>=2?Math.floor(fit):fit;}
 function sizeStage(){ $('tv-stage').style.transform=`translate(-50%,-50%) scale(${guideScale()})`; }
@@ -112,19 +115,26 @@ async function refresh() {
     if (previous) selectedChannel = Math.max(0,data.channels.findIndex(c=>c.id===previous));
     if (!futureBrowse) cursor = data.now_ms;
     render();
-    if(data.context)$('context-label').textContent=data.context.mode==='surfing'?'CHANNEL SURFING':'TIME MACHINE';
+    if(data.context)$('context-label').textContent=data.context.playlist?'BLOCK PARTY · ON AIR':data.context.mode==='surfing'?'CHANNEL SURFING':'TIME MACHINE';
     if (focused) [...document.querySelectorAll('[data-service]')].find(b=>b.dataset.service===focused)?.focus({preventScroll:true});
     else if (focusGrid) document.querySelector('.program-cell.focused')?.focus({preventScroll:true});
     if(channel&&!data.channels.some(c=>c.id===channel)){channel=null;video.pause();video.removeAttribute('src');video.load();}
-    if (!channel && data.channels.length) select(data.context?.service_id||new URLSearchParams(location.search).get('channel')||data.channels[0].id,false);
+    if (!channel && data.channels.length) {
+      const stored=viewerStorage.read(channelKey(),{});lastChannel=data.channels.some(c=>c.id===stored?.previous)?stored.previous:null;
+      const candidates=[new URLSearchParams(location.search).get('channel'),stored?.current,data.context?.service_id,data.channels[0].id];
+      select(candidates.find(id=>data.channels.some(c=>c.id===id)),false);
+    }
   } catch(error) { toast(error.message); }
 }
 async function select(id,closeGuide=true) {
   if(!data.channels.some(c=>c.id===id)){toast('This channel is not in the active lineup.');return;}
+  if(channel&&channel!==id)lastChannel=channel;
+  viewerStorage.write(channelKey(),{current:id,previous:lastChannel});
+  selectedChannel=data.channels.findIndex(c=>c.id===id);
   generation++; channel=id; segment=null; futureBrowse=false; cursor=data.now_ms;
   video.pause();video.removeAttribute('src');video.load();
   const c=data.channels.find(c=>c.id===id); $('playing-channel').textContent=`${c.channel} ${c.name}`;
-  if(closeGuide)setMode('watch');
+  if(closeGuide)setMode('watch');else render();
   await tune();
 }
 async function tune() {
@@ -172,6 +182,7 @@ function numberTune() {
 }
 video.onerror=()=>slate('Source unavailable','The server couldn’t open this recording. Try another channel for now.');
 video.onended=()=>{slate('The next segment is coming up.','The broadcast follows the station clock.');tune();};
+$('last-channel').onclick=recall;
 $('resume').onclick=()=>{segment=null;tune();};
 $('guide-toggle').onclick=cycleGuide;$('info-toggle').onclick=details;
 $('live-button').onclick=()=>{if(selected().c)select(selected().c.id);};
@@ -188,6 +199,7 @@ document.addEventListener('keydown',event=>{
   if(key==='PageUp'||key==='PageDown'){event.preventDefault();cursor=Math.max(data.now_ms,Math.min(data.until_ms-1,cursor+(key==='PageUp'?-86400000:86400000)));futureBrowse=true;render();return;}
   if(key==='ChannelUp'||key==='ChannelDown'){event.preventDefault();const i=data.channels.findIndex(c=>c.id===channel);select(data.channels[(i+(key==='ChannelUp'?1:-1)+data.channels.length)%data.channels.length].id);return;}
   if(key==='Enter' && (document.activeElement===document.body || document.activeElement===$('channels') || document.activeElement?.dataset.broadcast)){event.preventDefault();activate();return;}
+  if(key.toLowerCase()==='l'||key==='Recall'||key==='LastChannel'){event.preventDefault();recall();return;}
   if(key.toLowerCase()==='g'||key==='Guide'){event.preventDefault();cycleGuide();}
   if(key.toLowerCase()==='i'||key==='Info'){event.preventDefault();details();}
   if(key==='Escape'||key==='Backspace'||key==='BrowserBack'){event.preventDefault();setMode(mode==='full'?'mini':'watch');}

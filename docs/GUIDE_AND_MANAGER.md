@@ -120,3 +120,15 @@ Other references examined:
 The UI is an original recreation of period conventions, not copied firmware or a
 claim to reproduce one verified Rochester software build. No third-party guide
 screenshots or provider branding are bundled as application assets.
+
+## Channel recall and startup memory
+
+**Last** in the guide, **L** on a keyboard, or a supported **Recall/LastChannel**
+remote key switches between the last two tuned channels at their current live
+positions. Merely browsing a channel does not add it to recall history.
+
+The browser remembers the last tuned channel and restores it on startup in the
+PIP guide. An explicit `?channel=` link takes priority. Memory is scoped to this
+station, reception layout and viewing context; removed channels fall back to a
+valid lineup channel. Browser storage is optional: viewing still works when it
+is blocked. These browser/keyboard controls still need physical-TV testing.

@@ -288,7 +288,9 @@ def guide(db, now):
             entry['end_ms'] = min(end, item['end_ms'])
             entries.append(entry)
         channels.append({**dict(service), 'entries': entries})
-    return {'now_ms': now, 'until_ms': end, 'timezone': str(zone), 'channels': channels}
+    state=db.execute('SELECT * FROM state WHERE id=1').fetchone()
+    layout=broadcasts.active(db)
+    return {'preference_key':rank(state['seed'],state['real_anchor_ms'],layout['id'] if layout else '')[:32],'now_ms': now, 'until_ms': end, 'timezone': str(zone), 'channels': channels}
 
 
 def tune(db, service, now):

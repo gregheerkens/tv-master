@@ -137,11 +137,14 @@ def normalize_request(db,value,*,real_now=None):
         result['destination']=stamp.isoformat()
         result['template']=value.get('template')
         if value.get('destination_type')=='today':result['destination_type']='today';result['year']=value['year']
-    if saved_block:result['playlist']={k:saved_block[k] for k in ('name','duration_minutes','items')}
+    if saved_block:
+        result['playlist']={k:saved_block[k] for k in ('name','duration_minutes','items')}
+        result['playlist_id']=saved_block['id'];result['playlist_revision']=saved_block['revision']
     return result
 
 
 def key_for(request):
+    request={k:v for k,v in request.items() if k not in ('playlist_id','playlist_revision')}
     if request.get('destination_type')=='today':request={**request,'destination':request['destination'][:10]}
     return hashlib.sha256(json.dumps(request,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
@@ -246,7 +249,7 @@ def summary(db,request,now):
     block=db.execute('SELECT known_points FROM complete_block WHERE service_id=? AND start_ms<=? AND end_ms>?',(service,now,now)).fetchone()
     points=json.loads(block[0]) if block else []
     return {'mode':request['mode'],'service_id':service,'timezone':broadcasts.timezone(db),'now_ms':now,'episode_title':listed[0] if listed else None,'block_anchor_title':points[0].get('title') if points else None,
-        'resolved_selection':{k:v for k,v in request.items() if k not in ('layout_id','playlist')},'block_minutes':request['rules'].get('block_minutes'),'destination':request.get('destination'),'current_title':slots['title'],
+        'resolved_selection':{k:v for k,v in request.items() if k not in ('layout_id','playlist','playlist_id','playlist_revision')},'block_minutes':request['rules'].get('block_minutes'),'destination':request.get('destination'),'current_title':slots['title'],
         'current_segment':playing['title'],'current_kind':playing['kind'],'current_offset_ms':playing['offset_ms'],
         'current_status':health[slots['id']]['status'],'playable_percent':round(playable/(72*3600000)*100,1),
         'gap_blocks':sum(h['status'] in ('missing','partial','offline','unknown') for h in health.values()),
@@ -324,7 +327,7 @@ def context_info(main_db_path,ident):
     with connect(main_db_path) as db:
         row=db.execute('SELECT name,mode,request FROM viewing_context WHERE id=?',(ident,)).fetchone()
     if not row:raise ValueError('unknown viewing context')
-    return {'id':ident,'name':row['name'],'mode':row['mode'],'service_id':json.loads(row['request'])['service_id']}
+    return {'id':ident,'name':row['name'],'mode':row['mode'],'service_id':json.loads(row['request'])['service_id'],'playlist':bool(json.loads(row['request']).get('playlist'))}
 
 
 def sync_catalog(main_db_path,ident):

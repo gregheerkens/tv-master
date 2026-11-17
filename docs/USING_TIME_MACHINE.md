@@ -192,3 +192,29 @@ February 29 requires a leap year. A target local time in a daylight-saving gap i
 reported as unavailable rather than silently shifted. Exact historical viewing
 still requires dated lineup/listing evidence and matching media; a date choice does
 not fabricate missing history. Block Party remains representative programming.
+
+## Everyday Block Party controls
+
+The builder shows a live count of available programs and unique library hours for
+its selected tags, channel, date and duration. Offline recipes are reported
+separately; identical content identities are counted once. This is an eligibility
+check at the chosen moment, not a promise of complete continuity or three days of
+unique programming. Use preflight for actual block health.
+
+The editor supports **Undo edit** (up to 30 edits). Unsaved edits are copied into
+browser-local draft recovery automatically; after reload, New, or opening another
+block, choose **Recover draft**. Recovery keeps the saved revision, so a newer
+server edit cannot be overwritten silently. Save as a new block if needed.
+Recovery is local to this browser/station and depends on browser storage being
+available. Save important drafts to the server or export their JSON.
+
+Search the segment picker by title/ID and filter it by program, commercial or
+continuity. Search recent blocks by name and **Pin** favorites to the top. Pins
+are shared through the server; search covers the 100 most recent/pinned entries.
+**Undo last deletion** restores the last deleted block as a new draft, including
+its pin. It does not rewind or remove a broadcast copy.
+
+Drafts are labeled **Editing draft** with a revision and unsaved status. Published
+versions appear as **Rejoin on-air copy** links, with the draft revision where
+known. A newer draft can still link to its older, unchanged broadcast copy. The
+guide identifies a tuned playlist as **BLOCK PARTY · ON AIR**.

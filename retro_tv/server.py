@@ -18,6 +18,7 @@ from . import research
 from . import broadcasts
 from . import blocks
 from . import playlists
+from . import block_party
 from .health import resolve_path
 
 
@@ -87,7 +88,7 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
                     self.send(manager.dashboard(db,extend(db),standard,query.get('date',[None])[0],int(query.get('days',['3'])[0])))
                 elif re.fullmatch(r'/media/\d+', target.path):
                     self.media(db, int(target.path.rsplit('/',1)[1]))
-                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js','/admin-theme.css','/guide-theme.css','/app.webmanifest','/about','/party-playlists.js'):
+                elif target.path in ('/','/app.js','/style.css','/manager','/server-manager','/manager.js','/manager.css','/time-machine','/block-party','/time-machine.js','/time-machine.css','/research','/research.js','/research.css','/control.css','/control.js','/remote.js','/broadcasts','/broadcasts.js','/test-ui','/test-ui.js','/block-editor','/block-editor.js','/admin-theme.css','/guide-theme.css','/app.webmanifest','/about','/party-playlists.js','/viewer-storage.js'):
                     names={'/':'index.html','/manager':'control.html','/server-manager':'manager.html','/time-machine':'time-machine.html','/block-party':'time-machine.html','/research':'research.html','/broadcasts':'broadcasts.html','/test-ui':'test-ui.html','/block-editor':'block-editor.html','/about':'about.html'}
                     name=names.get(target.path,target.path[1:])
                     path = static / name
@@ -119,7 +120,7 @@ def serve(database, host='127.0.0.1', port=8787, *, admin=False):
                 if not 0<size<=2*1024*1024:raise ValueError('JSON body must be between 1 byte and 2 MB')
                 value=json.loads(self.rfile.read(size))
                 if not isinstance(value,dict):raise ValueError('JSON requests must be objects')
-                routes={'/api/party/generate':playlists.generate,'/api/party/save':playlists.save,'/api/party/delete':playlists.delete,'/api/manager/assess':manager.assess,'/api/manager/attach':manager.attach_media,
+                routes={'/api/party/matches':block_party.match_count,'/api/party/pin':playlists.pin,'/api/party/generate':playlists.generate,'/api/party/save':playlists.save,'/api/party/delete':playlists.delete,'/api/manager/assess':manager.assess,'/api/manager/attach':manager.attach_media,
                         '/api/manager/repair':manager.repair_source,'/api/manager/override':manager.set_override,
                         '/api/time-machine/recipe':timelines.save_recipe,
                         '/api/manager/health-standard':recommendations.save_standard,

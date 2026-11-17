@@ -55,3 +55,4 @@ video{image-rendering:auto}
 .time-machine-link{top:17px;font-size:15px;line-height:15px}
 .program-cell.partial{--health-color:#e7b823}.program-cell.missing{--health-color:#f97b7b}.program-cell.offline{--health-color:#d7a1e5}.program-cell.substituted{--health-color:#79d7e2}
 .program-cell:is(.partial,.missing,.offline,.substituted)::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--health-color);pointer-events:none}
+.remote-hints{gap:4px}.remote-hints button{font-size:14px}.remote-hints .key{margin-right:3px}

@@ -12,8 +12,27 @@ def get(db,ident):
 
 
 def listing(db):
-    return {'blocks':[get(db,r[0]) for r in db.execute('SELECT id FROM party_playlist ORDER BY updated_at DESC,id DESC LIMIT 100')],
+    from .scheduler import rank
+    state=db.execute('SELECT * FROM state WHERE id=1').fetchone()
+    contexts=[dict(r) for r in db.execute('SELECT id,name,request FROM viewing_context ORDER BY created_at DESC')]
+    blocks=[]
+    for r in db.execute('SELECT p.id,coalesce(pin.pinned,0) AS pinned FROM party_playlist p LEFT JOIN party_pin pin ON pin.playlist_id=p.id ORDER BY pinned DESC,updated_at DESC,p.id DESC LIMIT 100'):
+        block=get(db,r['id']);block['pinned']=bool(r['pinned']);block['copies']=[]
+        snapshot={k:block[k] for k in ('name','duration_minutes','items')}
+        for c in contexts:
+            request=json.loads(c['request'])
+            if request.get('playlist_id')==block['id'] or (request.get('playlist')==snapshot and request.get('service_id')==block['selection'].get('service_id')):
+                block['copies'].append({'id':c['id'],'name':c['name'],'revision':request.get('playlist_revision')})
+        blocks.append(block)
+    return {'preference_key':rank(state['seed'],state['real_anchor_ms'])[:32] if state else 'uninitialized','blocks':blocks,
             'assets':[dict(r) for r in db.execute('SELECT id,title,kind,out_ms-in_ms AS duration_ms FROM asset ORDER BY title,id')]}
+
+
+def pin(db,value):
+    get(db,value['id'])
+    if type(value.get('pinned')) is not bool:raise ValueError('pinned must be a boolean')
+    with db:db.execute('INSERT INTO party_pin VALUES (?,?) ON CONFLICT(playlist_id) DO UPDATE SET pinned=excluded.pinned',(value['id'],int(value['pinned'])))
+    return {'id':value['id'],'pinned':value['pinned']}
 
 
 def validate(db,doc):

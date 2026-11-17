@@ -71,3 +71,32 @@ def options(db):
 
 def matches(facets,rules):
     return all(not rules.get(key) or set(rules[key]) & facets[key] for key in ('years','months','networks'))
+
+
+def match_count(db,value):
+    """Unique eligible recipes at the chosen instant, not a forecast of full blocks."""
+    from .timelines import normalize_request
+    from .records import Policy
+    from .scheduler import eligible,daypart_matches
+    from .health import resolve_path
+    from datetime import datetime
+    request=normalize_request(db,value)
+    if request['mode']!='representative':raise ValueError('Choose Block Party')
+    local=datetime.fromisoformat(request['destination']);day=local.date().isoformat();service=request['service_id']
+    policy=Policy(db)
+    policy.selections[service]=request['rules']
+    policy.block_facets=metadata_facets(db)
+    assets={r['id']:r for r in db.execute('SELECT a.*,s.path,s.sha256 FROM asset a JOIN source s ON s.id=a.source_id')}
+    identities={};offline=set()
+    for row in db.execute('SELECT * FROM program'):
+        parts=[assets[p] for p in json.loads(row['parts'])]
+        length=sum(p['out_ms']-p['in_ms'] for p in parts)
+        if length>request['rules'].get('block_minutes',30)*60000:continue
+        if not eligible(row,service,day) or not daypart_matches(row,local) or not policy.allowed(row['id'],service,day,program=True):continue
+        if not all(eligible(p,service,day) and policy.allowed(p['id'],service,day) for p in parts):continue
+        identity=policy.program_ids.get(row['id'],row['id'])
+        if not all(resolve_path(db,p['path'],p['sha256']) for p in parts):offline.add(identity);continue
+        identities.setdefault(identity,length)
+    count=len(identities)
+    return {'programs':count,'duration_ms':sum(identities.values()),'offline_programs':len(offline-set(identities)),
+            'note':'Unique eligible recipes at the selected moment; full-block gaps are checked in preflight.' if count else 'No available programs meet these tags, channel, date, duration and file requirements. Clear a filter or choose another date or format.'}

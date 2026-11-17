@@ -1,6 +1,6 @@
 # Implementation status
 
-Reviewed against the repository on 2026-11-12. This is an implementation inventory,
+Reviewed against the repository on 2026-11-17. This is an implementation inventory,
 not a promise of exact historical coverage for an arbitrary library or location.
 
 ## Working
@@ -65,6 +65,13 @@ Calendar destinations now offer specific date/time, date-at-midnight and Today
 in a selected year using the broadcast timezone. Today contexts resume per day;
 preflight pins the resolved moment. This revision passed 93 Python tests and the
 destination, Time Machine, Block Party and playlist browser checks.
+
+Viewer QoL adds live eligible-library match counts, edit/delete undo, local
+unsaved draft recovery, searchable/type-filtered segments, recent-block search
+and server pins, on-air copy links and version labels, plus live channel recall
+and scoped last-channel startup memory (ADR 0012). Physical remote testing is
+still pending. Validation: 95 Python tests and six browser checks covering QoL,
+playlists, Time Machine, the builder, branding and guide/manager playback.
 
 ## Remaining limitations
 
