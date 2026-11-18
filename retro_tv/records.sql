@@ -77,3 +77,11 @@ CREATE TRIGGER IF NOT EXISTS affiliation_no_overlap BEFORE INSERT ON affiliation
  WHEN EXISTS(SELECT 1 FROM affiliation_history WHERE service_id=NEW.service_id
  AND valid_from<NEW.valid_until AND valid_until>NEW.valid_from)
  BEGIN SELECT RAISE(ABORT,'ambiguous affiliation history'); END;
+-- Curator-approved related content, ordered independently from media copies.
+CREATE TABLE IF NOT EXISTS content_fallback (
+ content_id TEXT NOT NULL REFERENCES content(id),
+ fallback_id TEXT NOT NULL REFERENCES content(id),
+ priority INTEGER NOT NULL DEFAULT 100 CHECK(priority>=0),
+ note TEXT NOT NULL,
+ PRIMARY KEY(content_id,fallback_id), CHECK(content_id<>fallback_id)
+);

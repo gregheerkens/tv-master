@@ -66,6 +66,14 @@ def import_records(db, document):
                 # Reidentification affects future composition, never source files or playout rows.
                 db.execute(f'INSERT INTO {table} VALUES (?,?) ON CONFLICT({identifier}) DO UPDATE SET content_id=excluded.content_id',
                            (item[identifier],item['content_id']))
+        for item in document.get('fallbacks',[]):
+            source=db.execute('SELECT kind FROM content WHERE id=?',(item['content_id'],)).fetchone()
+            target=db.execute('SELECT kind FROM content WHERE id=?',(item['fallback_id'],)).fetchone()
+            if not source or not target or source[0]!=target[0]:raise ValueError('Fallback identities must exist and have the same content kind')
+            if not isinstance(item.get('note'),str) or not item['note'].strip():raise ValueError('Fallbacks require a curator note')
+            priority=item.get('priority',100)
+            if type(priority) is not int or priority<0:raise ValueError('Fallback priority must be a nonnegative integer')
+            db.execute('INSERT INTO content_fallback VALUES (?,?,?,?) ON CONFLICT(content_id,fallback_id) DO UPDATE SET priority=excluded.priority,note=excluded.note',(item['content_id'],item['fallback_id'],priority,item['note']))
         for item in document.get('networks',[]):
             db.execute('INSERT INTO network VALUES (?,?)',(item['id'],item['name']))
         for item in document.get('channels',[]):

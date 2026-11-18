@@ -73,6 +73,14 @@ and scoped last-channel startup memory (ADR 0012). Physical remote testing is
 still pending. Validation: 95 Python tests and six browser checks covering QoL,
 playlists, Time Machine, the builder, branding and guide/manager playback.
 
+The Rochester packet adapter accepts ZIP, canonical JSON and reference SQLite.
+It resolves dated/recurring evidence with packet precedence, imports the full
+1995–2003 range (86,765 airings), and retains program/episode/source/continuity
+research. Resolver parity passed for all 26,296 station-days; repeat full imports
+created no duplicates. Curator-ranked related-content fallbacks and available
+alternate program copies preserve fixed slot budgets. Validation passed 100 Python
+tests plus real-packet CLI and Time Machine checks. See ROCHESTER_PACKET.md.
+
 ## Remaining limitations
 
 - No native TV APK, physical-TV remote verification or HLS/IPTV/transcoding adapter.

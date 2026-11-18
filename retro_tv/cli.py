@@ -29,6 +29,12 @@ def main():
     research=sub.add_parser('research',help='Stage daily historical listings; review before accepting')
     research.add_argument('action',choices=['create','fetch','sideload','accept','enrich','list','export'])
     research.add_argument('input',nargs='?',help='JSON request file, or batch ID for export')
+    packet=sub.add_parser('import-rochester',help='Import the Rochester research ZIP, JSON or SQLite packet')
+    packet.add_argument('packet',type=Path)
+    packet.add_argument('--from-date')
+    packet.add_argument('--through-date')
+    packet.add_argument('--exclude-estimates',action='store_true')
+    packet.add_argument('--channel-map',type=Path)
     block=sub.add_parser('import-block',help='Anchor a complete local or explicitly enabled remote recording')
     block.add_argument('manifest',type=Path)
     presentation=sub.add_parser('attach-block-presentation',help='Approve a downloaded/restored local copy with the same timeline')
@@ -101,6 +107,10 @@ def main():
                     action={'create':research.create_batch,'fetch':research.fetch_page,'sideload':research.sideload,'accept':research.accept,'enrich':research.enrich_episodes}[args.action]
                     result=action(db,value)
                 print(json.dumps(result,indent=2))
+            elif args.command == 'import-rochester':
+                from .rochester import import_packet
+                mapping=json.loads(args.channel_map.read_text()) if args.channel_map else None
+                print(json.dumps(import_packet(db,args.packet,start=args.from_date,through=args.through_date,include_estimates=not args.exclude_estimates,channel_map=mapping),indent=2))
             elif args.command == 'import-block':
                 from .blocks import register
                 print(json.dumps(register(db,json.loads(args.manifest.read_text())),indent=2))

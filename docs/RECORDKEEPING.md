@@ -116,3 +116,34 @@ python -m retro_tv stats example-episode
 These are local administrative commands, not public write endpoints. Catalog
 import is transactional. No analyzer, upscaler, FFmpeg, GPU or network access is
 needed for metadata-only operations.
+
+## Multiple airings and backup media
+
+A content identity can have multiple recording spans and any number of
+`historical_airing` rows. Each airing supplies its own service, start and end time.
+Media duration and source in/out points stay on the recording. Rerun history does
+not require duplicate video files.
+
+Alternate program recipes linked to the same content identity are alternate
+recordings. Available copies take precedence over unavailable copies. A distinct
+related replacement is a curator-approved `content_fallback` relationship:
+
+```json
+{"version":1,"fallbacks":[
+  {"content_id":"my-original-episode", "fallback_id":"my-related-episode",
+   "priority":10, "note":"Approved replacement when the original is unavailable"}
+]}
+```
+
+Import these references with `import-records`. Both identities must exist and
+have the same kind. Lower priority numbers are preferred. References are direct;
+there is no recursive fallback traversal. Same-content copies retain the airing's
+evidence. A different episode chosen through a fallback is labeled substituted.
+The original airing identity, source evidence and slot timing are retained.
+Programs must fit the slot and all ordinary eligibility/exclusion rules apply.
+
+Known commercial/bumper requirements can also use their direct approved backups.
+Whole spots and the fixed break budget are preserved. Exact requirement coverage
+remains distinguishable from replacement footage in health reporting. Immediate
+spot-repeat avoidance remains active. This does not add campaign-wide frequency
+optimization or replay suppression for known historical reruns.

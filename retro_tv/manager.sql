@@ -33,3 +33,5 @@ CREATE TRIGGER IF NOT EXISTS context_no_delete BEFORE DELETE ON broadcast_contex
 CREATE TABLE IF NOT EXISTS source_location (
  sha256 TEXT PRIMARY KEY, path TEXT NOT NULL, verified_at TEXT NOT NULL
 );
+-- End-time lookup keeps chronological research imports efficient.
+CREATE INDEX IF NOT EXISTS historical_airing_end ON historical_airing(service_id,end_ms,start_ms);

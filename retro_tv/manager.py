@@ -160,7 +160,7 @@ def assess(db,request):
                     unique[ident]=max(unique.get(ident,0),duration)
         cursor=start
         while cursor<end:
-            compose(scratch,service,cursor,state)
+            compose(scratch,service,cursor,state,policy=policy)
             cursor=scratch.execute('SELECT max(end_ms) FROM broadcast WHERE service_id=?',(service,)).fetchone()[0]
         health=timeline_health(scratch,service,start,end)
         totals={k:sum(h[k] for h in health.values()) for k in ('playable_ms','program_ms','block_ms','commercial_ms','continuity_ms','slate_ms','missing_file_ms')}

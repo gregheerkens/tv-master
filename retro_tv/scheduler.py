@@ -85,7 +85,7 @@ def daypart_matches(row, local):
     return False
 
 
-def compose(db, service, start, state):
+def compose(db, service, start, state, *, policy=None):
     """Freeze a whole block; final block may cross the visible horizon.
 
     Date eligibility covers the entire block, including a local midnight crossing.
@@ -101,7 +101,7 @@ def compose(db, service, start, state):
     if not block_ms and blocks.compose(db,service,start,state):return
     zone = ZoneInfo(broadcasts.timezone(db))
     day = datetime.fromtimestamp(start/1000, zone).date().isoformat()
-    policy = Policy(db)
+    policy = policy if policy is not None else Policy(db)
     assets = {r['id']: dict(r) for r in db.execute(
         'SELECT asset.*,source.path,source.sha256 FROM asset JOIN source ON source.id=asset.source_id')}
     viewing_mode=db.execute('SELECT mode FROM viewing_mode WHERE id=1').fetchone()
@@ -123,6 +123,10 @@ def compose(db, service, start, state):
             if identity==target:return True
             seen.add(identity);identity=policy.parents.get(identity)
         return False
+    fallback_ranks={r['fallback_id']:r['priority'] for r in db.execute('SELECT * FROM content_fallback WHERE content_id=?',(expected['content_id'],))} if expected and expected['content_id'] and not override else {}
+    def fallback_rank(program_id):
+        if not expected or not expected['content_id'] or identity_matches(program_id,expected['content_id']):return -1
+        return min((priority for ident,priority in fallback_ranks.items() if identity_matches(program_id,ident)),default=1000000)
     candidates = []
     for row in db.execute('SELECT * FROM program ORDER BY id'):
         if expected:
@@ -130,7 +134,7 @@ def compose(db, service, start, state):
             if override:
                 if row['id']!=override['program_id']:continue
             elif expected['content_id']:
-                if not identity_matches(row['id'],expected['content_id']):continue
+                if not identity_matches(row['id'],expected['content_id']) and not any(identity_matches(row['id'],ident) for ident in fallback_ranks):continue
             elif title_key(row['title'])!=title_key(expected['title']):continue
         elif historical_mode:
             continue
@@ -153,23 +157,27 @@ def compose(db, service, start, state):
         daypart_ok = daypart_ok and daypart_matches(row, datetime.fromtimestamp((start+length-1)/1000, zone))
         if daypart_ok and eligible(row, service, last_day) and policy.allowed(row['id'],service,last_day,program=True) and all(eligible(p, service, last_day) and policy.allowed(p['id'],service,last_day) for p in parts):
             candidates.append((dict(row), parts, length))
-    previous = db.execute('SELECT program_id FROM broadcast WHERE service_id=? ORDER BY start_ms DESC LIMIT 1',
-                          (service,)).fetchone()
-    alternate = [p for p in candidates if not previous or p[0]['id'] != previous[0]]
-    if alternate:
-        candidates = alternate
-    candidates.sort(key=lambda p: rank(state['seed'], service, start, p[0]['id']))
+    from .health import resolve_path
+    def preference(candidate):
+        return (not all(resolve_path(db,a['path'],a['sha256']) for a in candidate[1]),fallback_rank(candidate[0]['id']))
+    if candidates:
+        best=min(preference(p) for p in candidates)
+        candidates=[p for p in candidates if preference(p)==best]
+    previous = db.execute('SELECT program_id FROM broadcast WHERE service_id=? ORDER BY start_ms DESC LIMIT 1',(service,)).fetchone()
+    alternate=[p for p in candidates if not previous or p[0]['id']!=previous[0]]
+    if alternate:candidates=alternate
+    candidates.sort(key=lambda p:rank(state['seed'],service,start,p[0]['id']))
     chosen = candidates[0] if candidates else None
     length = chosen[2] if chosen else boundary-start
     ident = rank(state['seed'], service, start)[:32]
     title = chosen[0]['title'] if chosen else 'Missing: '+expected['title'] if expected else 'Listings unavailable' if historical_mode else 'Off air — library gap'
-    evidence=('substituted' if override else expected['evidence_state']) if chosen and expected else 'composed' if chosen else 'missing'
+    evidence=('substituted' if override or fallback_rank(chosen[0]['id'])>=0 else expected['evidence_state']) if chosen and expected else 'composed' if chosen else 'missing'
     db.execute('INSERT INTO broadcast VALUES (?,?,?,?,?,?,?)',
                (ident, service, start, start+length, title,
                 chosen[0]['id'] if chosen else None, evidence))
     if expected:
         db.execute('INSERT INTO broadcast_context VALUES (?,?,?,?)',(ident,expected['id'],expected['evidence_state'],
-            json.dumps({'listing':json.loads(expected['provenance']),'substitution':override['note'] if override else None})))
+            json.dumps({'listing':json.loads(expected['provenance']),'substitution':override['note'] if override else 'Curator-approved content fallback' if chosen and fallback_rank(chosen[0]['id'])>=0 else None})))
     needed=[dict(r) for r in db.execute('SELECT * FROM airing_requirement WHERE airing_id=?',(expected['id'],))] if expected else []
     cursor = start
 
@@ -188,6 +196,7 @@ def compose(db, service, start, state):
     def fill(budget, opening=False):
         nonlocal cursor
         last_day = datetime.fromtimestamp((cursor+max(1,budget)-1)/1000, zone).date().isoformat()
+        approved={(r['content_id'],r['fallback_id']):r['priority'] for requirement in needed for r in db.execute('SELECT * FROM content_fallback WHERE content_id=?',(requirement['content_id'],))}
         pool = [a for a in assets.values() if a['kind'] != 'program'
                 and eligible(a, service, day) and eligible(a, service, last_day)
                 and policy.allowed(a['id'],service,day) and policy.allowed(a['id'],service,last_day)]
@@ -203,9 +212,9 @@ def compose(db, service, start, state):
                 if not opening:
                     emit(None, budget, 'No eligible whole spot fits the remaining break')
                 return budget
-            def matches(a,r):return a['kind']==r['kind'] and (not r['content_id'] or policy.asset_ids.get(a['id'])==r['content_id'])
-            fitting.sort(key=lambda a: (not any(r['duration_ms']>0 and matches(a,r) for r in needed),
-                                        rank(state['seed'], service, cursor, index, a['id'])))
+            def matches(a,r):return a['kind']==r['kind'] and (not r['content_id'] or policy.asset_ids.get(a['id'])==r['content_id'] or (r['content_id'],policy.asset_ids.get(a['id'])) in approved)
+            fitting.sort(key=lambda a: (not resolve_path(db,a['path'],a['sha256']),not any(r['duration_ms']>0 and matches(a,r) for r in needed),
+                                        any(target==policy.asset_ids.get(a['id']) for source,target in approved),min((priority for (source,target),priority in approved.items() if target==policy.asset_ids.get(a['id'])),default=-1),rank(state['seed'], service, cursor, index, a['id'])))
             asset = fitting[0]
             emit(asset)
             for requirement in needed:
@@ -241,13 +250,14 @@ def extend(db, *, real_now=None):
     try:
         now = clock(db, real_now)
         state = db.execute('SELECT * FROM state WHERE id=1').fetchone()
+        policy=Policy(db)
         for row in db.execute('SELECT id FROM service ORDER BY id').fetchall():
             service = row[0]
             tail = db.execute('SELECT MAX(end_ms) FROM broadcast WHERE service_id=?', (service,)).fetchone()[0]
             cursor = tail if tail is not None else state['historical_anchor_ms']
             # Preserve elapsed airtime during shutdown, too. No replay or restart.
             while cursor < now+HORIZON_MS:
-                compose(db, service, cursor, state)
+                compose(db, service, cursor, state, policy=policy)
                 cursor = db.execute('SELECT MAX(end_ms) FROM broadcast WHERE service_id=?', (service,)).fetchone()[0]
         db.commit()
         return now

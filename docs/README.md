@@ -16,6 +16,7 @@ These guides describe the current Python/SQLite/browser app. Start with the root
 - [Ingestion requirements and defaults](INGESTION.md)
 - [Catalog records, eligibility and quality](RECORDKEEPING.md)
 - [Complete local/remote recording blocks](COMPLETE_BLOCKS.md)
+- [Rochester research packet import](ROCHESTER_PACKET.md)
 - [Period research, sideloads and local screenshot capture](PERIOD_RESEARCH.md)
 - [Optional companion detector](COMPANION.md)
 - [Metadata sources and future enrichment](DATA_SOURCES.md)

@@ -112,3 +112,8 @@ server. Physical TV remote testing, broader history adapters and automatic
 identification remain work ahead. The guide uses supplied blue SD component shells
 and a bundled pixel font; manager/server pages use warm cassette-style controls.
 Original family artwork is on the optional About screen; startup remains the guide.
+
+The [Rochester research packet importer](docs/ROCHESTER_PACKET.md) accepts the
+standalone research ZIP, JSON or reference SQLite and preserves dated/recurring
+evidence. [Backup relationships](docs/RECORDKEEPING.md#multiple-airings-and-backup-media)
+allow alternate media and curator-approved replacements in fixed slots.

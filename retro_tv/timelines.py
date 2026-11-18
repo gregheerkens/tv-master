@@ -362,7 +362,7 @@ def sync_catalog(main_db_path,ident):
                     elif table=='channel_profile' and info['mode']=='representative' and row['mode']=='historical':
                         target.execute("UPDATE channel_profile SET mode='custom' WHERE service_id=?",(row['service_id'],))
             # These are user corrections/preferences, not broadcast-order inputs already published.
-            for table in ('stream_source','block_presentation','source_location','recording_quality','quality_alert','content_preference','recording_preference','health_standard'):
+            for table in ('content_fallback','stream_source','block_presentation','source_location','recording_quality','quality_alert','content_preference','recording_preference','health_standard'):
                 columns=origin.execute(f'PRAGMA table_info({table})').fetchall()
                 names=[r['name'] for r in columns];mutable=[r['name'] for r in columns if not r['pk']]
                 updates=','.join(f'{c}=excluded.{c}' for c in mutable)
